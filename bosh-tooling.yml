@@ -1,0 +1,15 @@
+meta:
+  env:
+    name: tooling
+
+releases:
+- {name: uaa-customized, version: latest}
+
+instance_groups:
+- name: uaa
+  vm_extensions: [bosh-lb]
+  networks:
+  - name: bosh
+  jobs:
+  - name: uaa-customized
+    release: uaa-customized
