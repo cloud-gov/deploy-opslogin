@@ -1,15 +1,28 @@
-meta:
-  env:
-    name: tooling
+---
+name: opslogin
 
-releases:
-- {name: uaa-customized, version: latest}
+releases: []
+
+stemcells:
+- alias: default
+  name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
+  version: latest
 
 instance_groups:
-- name: uaa
-  vm_extensions: [bosh-lb]
-  networks:
-  - name: bosh
-  jobs:
-  - name: uaa-customized
-    release: uaa-customized
+  - name: opslogin
+    vm_type: elasticache-broker
+    stemcell: default
+    networks:
+    - name: default
+    instances: 3
+    azs:
+      - z1
+      - z2
+    jobs: []
+
+variables: []
+update:
+  canaries: 1
+  max_in_flight: 10
+  canary_watch_time: 1000-30000
+  update_watch_time: 1000-30000

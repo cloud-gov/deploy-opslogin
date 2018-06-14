@@ -1,94 +1,122 @@
-templates:
-  client: &client-template
-    authorities: uaa.none
-    authorized-grant-types: authorization_code,client_credentials,refresh_token
-    autoapprove: true
-    override: true
-    access-token-validity: 1800
-    refresh-token-validity: 1800
+- type: replace
+  path: /releases/-
+  value:
+    name: uaa
+    version: "59"
+    url: https://s3.amazonaws.com/bosh-compiled-release-tarballs/uaa-59-ubuntu-trusty-3586.16-20180605-222612-468773014-20180605222623.tgz?versionId=B1Ex1AVvXDtBc6TvtzTmHOx0qnlnfhUW
+    sha1: c5b9c9c59ec383989daa4134494e78623544dd8c
 
-instance_groups:
-- name: uaa
-  instances: 2
-  jobs:
-  - name: uaa
+# Add UAA job
+- type: replace
+  path: /instance_groups/name=opslogin/jobs/-
+  value:
+    name: uaa
+    release: uaa
     properties:
+      encryption:
+        encryption_keys:
+        - label: uaa-encryption-key-1
+          passphrase: ((uaa_encryption_key_1))
+        active_key_label: uaa-encryption-key-1
       uaa:
-        url: (( concat "https://opsuaa." meta.domain ))
-        issuer: (( concat "https://opslogin." meta.domain ))
+        url: "https://((internal_ip)):8443"
+        port: -1
+        sslPrivateKey: ((uaa_ssl.private_key))
+        sslCertificate: ((uaa_ssl.certificate))
+        jwt:
+          signing_key: ((uaa_jwt_signing_key.private_key))
+          verification_key: ((uaa_jwt_signing_key.public_key))
+        scim:
+          users:
+          - name: admin
+            groups: [bosh.admin]
+            password: ((admin_password))
         clients:
-          concourse_production:
-            <<: *client-template
-            scope: openid,concourse.admin,concourse.apps
-            authorities: uaa.none,concourse.admin,concourse.apps
-            secret: (( param "specify concourse production secret" ))
-            redirect-uri: (( param "specify concourse production redirect url" ))
-          concourse_staging:
-            <<: *client-template
-            scope: openid,concourse.admin,concourse.apps
-            authorities: uaa.none,concourse.admin,concourse.apps
-            secret: (( param "specify concourse staging secret" ))
-            redirect-uri: (( param "specify concourse staging redirect url" ))
-          monitoring_production:
-            scope: openid,metrics.read
-            secret: (( param "specify monitoring production secret" ))
-            redirect-uri: (( param "specify monitoring production redirect url" ))
-            <<: *client-template
-          monitoring_staging:
-            scope: openid,metrics.read
-            secret: (( param "specify monitoring staging secret" ))
-            redirect-uri: (( param "specify monitoring staging redirect url" ))
-            <<: *client-template
-          # For authentication to bosh via concourse
-          ci:
-            secret: (( grab secrets.bosh_uaa_ci_client_secret ))
+          bosh_cli:
+            override: true
+            authorized-grant-types: password,refresh_token
+            scope: openid,bosh.admin,bosh.read,bosh.*.admin,bosh.*.read
+            authorities: uaa.none
+            access-token-validity: 120 # 2 min
+            refresh-token-validity: 86400 # 1 day
+            secret: ""
+          admin:
+            override: true
             authorized-grant-types: client_credentials
+            scope: ""
             authorities: bosh.admin
-            scope: ""
-          uaa-token-audit:
-            secret: (( param "specify uaa token audit client secret" ))
+            secret: ((admin_password))
+          hm:
+            override: true
             authorized-grant-types: client_credentials
-            authorities: scim.read,tokens.list,uaa.admin
             scope: ""
-          platform-kibana-development:
-            <<: *client-template
-            scope: openid,email,profile
-            redirect-uri: https://logs-platform.dev.us-gov-west-1.aws-us-gov.cloud.gov/oauth2/callback
-            secret: (( param "specify platform logs development client secret" ))
-          platform-kibana-staging:
-            <<: *client-template
-            scope: openid,email,profile
-            redirect-uri: https://logs-platform.fr-stage.cloud.gov/oauth2/callback
-            secret: (( param "specify platform logs staging client secret" ))
-          platform-kibana-production:
-            <<: *client-template
-            scope: openid,email,profile
-            redirect-uri: https://logs-platform.fr.cloud.gov/oauth2/callback
-            secret: (( param "specify platform logs production client secret" ))
-
-          prometheus-staging:
-            <<: *client-template
-            scope: openid,email,profile
-            redirect-uri: https://prometheus.fr-stage.cloud.gov/oauth2/callback,https://alertmanager.fr-stage.cloud.gov/oauth2/callback,https://grafana.fr-stage.cloud.gov/oauth2/callback
-            secret: (( param "specify prometheus staging client secret" ))
-          prometheus-production:
-            <<: *client-template
-            scope: openid,email,profile
-            redirect-uri: https://prometheus.fr.cloud.gov/oauth2/callback,https://alertmanager.fr.cloud.gov/oauth2/callback,https://grafana.fr.cloud.gov/oauth2/callback
-            secret: (( param "specify prometheus production client secret" ))
-        zones:
-          internal:
-            hostnames:
-            - (( replace ))
-
+            authorities: bosh.admin
+            secret: ((hm_password))
+          uaa_admin:
+            override: true
+            authorized-grant-types: client_credentials
+            scope: ""
+            authorities: clients.read,clients.write,clients.secret,uaa.admin,scim.read,scim.write,password.write
+            secret: ((uaa_admin_client_secret))
+        login: {client_secret: ((uaa_login_client_secret))}
+        zones: {internal: {hostnames: []}}
       login:
-        url: (( concat "https://opslogin." meta.domain ))
+        saml:
+          serviceProviderKey: ((uaa_service_provider_ssl.private_key))
+          serviceProviderKeyPassword: "" # TODO: Remove this when UAA defaults this value
+          serviceProviderCertificate: ((uaa_service_provider_ssl.certificate))
+      uaadb:
+        address: 127.0.0.1
+        port: 5432
+        db_scheme: postgresql
+        databases:
+        - tag: uaa
+          name: uaa
+        roles:
+        - tag: admin
+          name: postgres
+          password: ((postgres_password))
 
-- name: bosh
-  jobs:
-  - name: director
-    properties:
-      director:
-        user_management:
-          uaa:
-            url: (( concat "https://opslogin." meta.domain ))
+- type: replace
+  path: /variables/-
+  value:
+    name: uaa_jwt_signing_key
+    type: rsa
+
+- type: replace
+  path: /variables/-
+  value:
+    name: uaa_admin_client_secret
+    type: password
+
+- type: replace
+  path: /variables/-
+  value:
+    name: uaa_login_client_secret
+    type: password
+
+- type: replace
+  path: /variables/-
+  value:
+    name: uaa_encryption_key_1
+    type: password
+
+- type: replace
+  path: /variables/-
+  value:
+    name: uaa_ssl
+    type: certificate
+    options:
+      ca: default_ca
+      common_name: ((internal_ip))
+      alternative_names: [((internal_ip))]
+
+- type: replace
+  path: /variables/-
+  value:
+    name: uaa_service_provider_ssl
+    type: certificate
+    options:
+      ca: default_ca
+      common_name: ((internal_ip))
+      alternative_names: [((internal_ip))]
