@@ -1,28 +1,99 @@
 ---
 name: opslogin
 
-releases: []
+releases:
+- name: uaa
+  version: latest
 
 stemcells:
 - alias: default
   name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
   version: latest
 
-instance_groups:
-  - name: opslogin
-    vm_type: elasticache-broker
-    stemcell: default
-    networks:
-    - name: default
-    instances: 3
-    azs:
-      - z1
-      - z2
-    jobs: []
-
-variables: []
 update:
   canaries: 1
   max_in_flight: 10
   canary_watch_time: 1000-30000
   update_watch_time: 1000-30000
+
+instance_groups:
+- name: opslogin
+  vm_type: bosh
+  stemcell: default
+  networks:
+  - name: bosh
+  instances: 3
+  azs: [z1, z2]
+  jobs:
+  - name: uaa
+    release: uaa
+    properties:
+      encryption:
+        encryption_keys:
+        - label: uaa-encryption-key-1
+          passphrase: ((uaa_encryption_key_1))
+        active_key_label: uaa-encryption-key-1
+      uaa:
+        url: https://opsuaa.fr.cloud.gov
+        issuer: https://opslogin.fr.cloud.gov
+        port: -1
+        sslPrivateKey: ((uaa_ssl.private_key))
+        sslCertificate: ((uaa_ssl.certificate))
+        jwt:
+          signing_key: ((uaa_jwt_signing_key.private_key))
+          verification_key: ((uaa_jwt_signing_key.public_key))
+        scim:
+        clients:
+          uaa_admin:
+            override: true
+            authorized-grant-types: client_credentials
+            scope: ""
+            authorities: clients.read,clients.write,clients.secret,uaa.admin,scim.read,scim.write,password.write
+            secret: ((uaa_admin_client_secret))
+        login: {client_secret: ((uaa_login_client_secret))}
+        zones: {internal: {hostnames: []}}
+      login:
+        saml:
+          activeKeyId: key-1
+          keys:
+            key-1:
+              key: "((uaa_login_saml.private_key))"
+              certificate: "((uaa_login_saml.certificate))"
+              passphrase: ""
+          providers: ((saml-providers))
+      uaadb:
+        address: ((terraform_outputs.bosh_rds_host_curr))
+        port: ((terraform_outputs.bosh_rds_port))
+        user: ((terraform_outputs.bosh_rds_username))
+        password: ((terraform_outputs.bosh_rds_password))
+        databases:
+        - tag: uaa
+          name: uaa
+        roles:
+        - tag: admin
+          name: postgres
+          password: ((terraform_outputs.opsuaa_rds_password))
+
+variables:
+- name: uaa_jwt_signing_key
+  type: rsa
+- name: uaa_admin_client_secret
+  type: password
+- name: uaa_login_client_secret
+  type: password
+- name: uaa_encryption_key_1
+  type: password
+- name: uaa_ca
+  type: certificate
+  options:
+    is_ca: true
+    common_name: uaaCA
+- name: uaa_ssl
+  type: certificate
+  options:
+    ca: uaa_ca
+- name: uaa_login_saml
+  type: certificate
+  options:
+    ca: uaa_ca
+    common_name: uaa_login_saml
