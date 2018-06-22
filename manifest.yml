@@ -1,8 +1,12 @@
 ---
-name: opslogin
+name: opsuaa
 
 releases:
 - name: uaa
+  version: latest
+- name: uaa-customized
+  version: latest
+- name: secureproxy
   version: latest
 
 stemcells:
@@ -12,18 +16,18 @@ stemcells:
 
 update:
   canaries: 1
-  max_in_flight: 10
-  canary_watch_time: 1000-30000
-  update_watch_time: 1000-30000
+  canary_watch_time: 1000-600000
+  update_watch_time: 1000-600000
+  max_in_flight: 4
 
 instance_groups:
-- name: opslogin
+- name: opsuaa
   vm_type: bosh
   stemcell: default
   networks:
   - name: bosh
-  instances: 3
-  azs: [z1, z2]
+  instances: 2
+  azs: [z1]
   jobs:
   - name: uaa
     release: uaa
@@ -57,22 +61,32 @@ instance_groups:
           activeKeyId: key-1
           keys:
             key-1:
-              key: "((uaa_login_saml.private_key))"
-              certificate: "((uaa_login_saml.certificate))"
+              key: ((uaa_login_saml.private_key))
+              certificate: ((uaa_login_saml.certificate))
               passphrase: ""
-          providers: ((saml-providers))
+          providers: ((saml_providers))
       uaadb:
-        address: ((terraform_outputs.bosh_rds_host_curr))
-        port: ((terraform_outputs.bosh_rds_port))
-        user: ((terraform_outputs.bosh_rds_username))
-        password: ((terraform_outputs.bosh_rds_password))
+        address: ((terraform_outputs.opsuaa_rds_host))
+        port: ((terraform_outputs.opsuaa_rds_port))
+        user: ((terraform_outputs.opsuaa_rds_username))
+        password: ((terraform_outputs.opsuaa_rds_password))
+        db_scheme: postgresql
         databases:
         - tag: uaa
-          name: uaa
+          name: opsuaa
         roles:
         - tag: admin
-          name: postgres
+          name: opsuaa
           password: ((terraform_outputs.opsuaa_rds_password))
+  - name: uaa-customized
+    release: uaa-customized
+    properties: {}
+  - name: secureproxy
+    release: secureproxy
+    properties:
+      secureproxy:
+        listen_port: 8081
+        proxy_port: 8080
 
 variables:
 - name: uaa_jwt_signing_key
