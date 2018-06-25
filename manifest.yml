@@ -28,6 +28,8 @@ instance_groups:
   - name: bosh
   instances: 2
   azs: [z1]
+  vm_extensions:
+  - opsuaa-lb
   jobs:
   - name: uaa
     release: uaa
