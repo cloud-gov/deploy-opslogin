@@ -18,8 +18,14 @@ resources:
 - name: uaa-config
   type: git
   source:
-    uri: ((uaa-config-uri))
-    branch: ((uaa-config-branch))
+    uri: ((uaa-config-git-uri))
+    branch: ((uaa-config-git-branch))
+
+- name: pipeline-tasks
+  type: git
+  source:
+    uri: ((pipeline-tasks-git-uri))
+    branch: ((pipeline-tasks-git-branch))
 
 - name: terraform-yaml
   type: s3-iam
@@ -118,6 +124,26 @@ jobs:
     params:
       text: |
         :white_check_mark: Successfully deployed ops UAA
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
+
+- name: uaa-smoke-tests
+  plan:
+  - aggregate:
+    - get: pipeline-tasks
+    - get: uaa-deployment
+      trigger: true
+  - task: smoke-tests
+    file: pipeline-tasks/uaa-smoke-tests.yml
+    params:
+      BASE_URL: https://opslogin.fr.cloud.gov
+  on_failure:
+    put: slack
+    params:
+      text: |
+        :x: UAA Smoke Tests for opslogin FAILED
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
       channel: ((slack-channel))
       username: ((slack-username))
