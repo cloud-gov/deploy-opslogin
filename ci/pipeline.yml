@@ -1,0 +1,150 @@
+resource_types:
+- name: s3-iam
+  type: docker-image
+  source:
+    repository: 18fgsa/s3-resource
+
+- name: bosh-deployment
+  type: docker-image
+  source:
+    repository: cloudfoundry/bosh-deployment-resource
+
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+
+resources:
+- name: uaa-config
+  type: git
+  source:
+    uri: ((uaa-config-git-uri))
+    branch: ((uaa-config-git-branch))
+
+- name: pipeline-tasks
+  type: git
+  source:
+    uri: ((pipeline-tasks-git-uri))
+    branch: ((pipeline-tasks-git-branch))
+
+- name: terraform-yaml
+  type: s3-iam
+  source:
+    bucket: ((tf-state-bucket))
+    versioned_file: ((tf-state-file))
+    region_name: ((aws-region))
+
+- name: common
+  type: s3-iam
+  source:
+    bucket: ((secrets-bucket))
+    versioned_file: opsuaa.yml
+    region_name: ((aws-region))
+
+- name: stemcell
+  type: bosh-io-stemcell
+  source:
+    name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
+
+- name: uaa-release
+  type: bosh-io-release
+  source:
+    repository: cloudfoundry/uaa-release
+
+- name: uaa-customized-release
+  type: s3-iam
+  source:
+    bucket: ((bosh-releases-bucket))
+    regexp: uaa-customized-(.*).tgz
+    region_name: ((aws-region))
+
+- name: secureproxy-release
+  type: s3-iam
+  source:
+    bucket: ((bosh-releases-bucket))
+    regexp: secureproxy-(.*).tgz
+    region_name: ((aws-region))
+
+- name: uaa-deployment
+  type: bosh-deployment
+  source:
+    target: ((bosh-target))
+    client: ((bosh-client))
+    client_secret: ((bosh-client-secret))
+    ca_cert: ((ca-cert))
+    deployment: opsuaa
+
+- name: slack
+  type: slack-notification
+  source:
+    url: ((slack-webhook-url))
+
+jobs:
+- name: deploy-ops-uaa
+  serial_groups: [ops-uaa]
+  plan:
+  - aggregate:
+    - get: uaa-config
+      trigger: true
+    - get: common
+      trigger: true
+    - get: terraform-yaml
+      trigger: true
+    - get: stemcell
+      trigger: true
+    - get: uaa-release
+      trigger: true
+    - get: uaa-customized-release
+      trigger: true
+    - get: secureproxy-release
+      trigger: true
+  - put: uaa-deployment
+    params:
+      manifest: uaa-config/manifest.yml
+      stemcells:
+      - stemcell/*.tgz
+      releases:
+      - uaa-release/*.tgz
+      - uaa-customized-release/*.tgz
+      - secureproxy-release/*.tgz
+      vars_files:
+      - common/opsuaa.yml
+      - terraform-yaml/state.yml
+  on_failure:
+    put: slack
+    params:
+      text: |
+        :x: FAILED to deploy ops UAA
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
+  on_success:
+    put: slack
+    params:
+      text: |
+        :white_check_mark: Successfully deployed ops UAA
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
+
+- name: uaa-smoke-tests
+  plan:
+  - aggregate:
+    - get: pipeline-tasks
+    - get: uaa-deployment
+      trigger: true
+  - task: smoke-tests
+    file: pipeline-tasks/uaa-smoke-tests.yml
+    params:
+      BASE_URL: https://opslogin.fr.cloud.gov
+  on_failure:
+    put: slack
+    params:
+      text: |
+        :x: UAA Smoke Tests for opslogin FAILED
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
