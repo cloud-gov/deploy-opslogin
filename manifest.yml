@@ -25,7 +25,8 @@ instance_groups:
   vm_type: bosh
   stemcell: default
   networks:
-  - name: bosh
+  - name: opsuaa
+    static_ips: ((terraform_outputs.bosh_uaa_static_ips))
   instances: 2
   azs: [z1]
   vm_extensions:
