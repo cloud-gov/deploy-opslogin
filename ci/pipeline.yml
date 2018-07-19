@@ -89,7 +89,6 @@ jobs:
     - get: common
       trigger: true
     - get: terraform-yaml
-      trigger: true
     - get: stemcell
       trigger: true
     - get: uaa-release
