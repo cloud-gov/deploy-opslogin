@@ -72,7 +72,7 @@ instance_groups:
             <<: *client-template
             scope: openid,concourse.admin
             authorities: uaa.none,concourse.admin
-            redirect-uri: https://ci.fr-stage.cloud.gov/auth/oauth/callback
+            redirect-uri: https://ci.fr-stage.cloud.gov/sky/issuer/callback
             secret: ((concourse_client_secret_staging))
           concourse_production:
             <<: *client-template
