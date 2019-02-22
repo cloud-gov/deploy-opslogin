@@ -129,10 +129,6 @@ instance_groups:
               key: ((uaa_login_saml.private_key))
               certificate: ((uaa_login_saml.certificate))
               passphrase: ""
-      	    key-2:
-              key: ((uaa_login_saml_20190222.private_key))
-              certificate: ((uaa_login_saml_20190222.certificate))
-              passphrase: ""
           providers: ((saml_providers))
       uaadb:
         address: ((terraform_outputs.opsuaa_rds_host))
