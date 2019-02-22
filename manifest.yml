@@ -125,10 +125,6 @@ instance_groups:
           entity_base_url: opslogin.fr.cloud.gov
           activeKeyId: key-2
           keys:
-            key-1:
-              key: ((uaa_login_saml.private_key))
-              certificate: ((uaa_login_saml.certificate))
-              passphrase: ""
             key-2:
               key: ((uaa_login_saml_20190222.private_key))
               certificate: ((uaa_login_saml_20190222.certificate))
