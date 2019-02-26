@@ -123,11 +123,11 @@ instance_groups:
         self_service_links_enabled: false
         saml:
           entity_base_url: opslogin.fr.cloud.gov
-          activeKeyId: key-1
+          activeKeyId: key-2
           keys:
-            key-1:
-              key: ((uaa_login_saml.private_key))
-              certificate: ((uaa_login_saml.certificate))
+            key-2:
+              key: ((uaa_login_saml_20190222.private_key))
+              certificate: ((uaa_login_saml_20190222.certificate))
               passphrase: ""
           providers: ((saml_providers))
       uaadb:
