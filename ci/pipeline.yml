@@ -41,10 +41,10 @@ resources:
     versioned_file: opsuaa.yml
     region_name: ((aws-region))
 
-- name: stemcell
+- name: stemcell-xenial
   type: bosh-io-stemcell
   source:
-    name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
+    name: bosh-aws-xen-hvm-ubuntu-xenial-go_agent
 
 - name: uaa-release
   type: bosh-io-release
@@ -89,7 +89,7 @@ jobs:
     - get: common
       trigger: true
     - get: terraform-yaml
-    - get: stemcell
+    - get: stemcell-xenial
       trigger: true
     - get: uaa-release
       trigger: true
@@ -101,7 +101,7 @@ jobs:
     params:
       manifest: uaa-config/manifest.yml
       stemcells:
-      - stemcell/*.tgz
+      - stemcell-xenial/*.tgz
       releases:
       - uaa-release/*.tgz
       - uaa-customized-release/*.tgz
