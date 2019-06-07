@@ -156,6 +156,9 @@ instance_groups:
         proxy_port: 8080
   - name: bpm
     release: bpm
+    properties:
+      bpm:
+        enabled: true
 
 variables:
 - name: uaa_jwt_signing_key
