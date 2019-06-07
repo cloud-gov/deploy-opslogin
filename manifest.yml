@@ -156,9 +156,6 @@ instance_groups:
       secureproxy:
         listen_port: 8081
         proxy_port: 8080
-  - name: bpm
-    release: bpm
-    properties:
 
 variables:
 - name: uaa_jwt_signing_key
