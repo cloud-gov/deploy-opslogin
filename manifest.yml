@@ -37,8 +37,6 @@ instance_groups:
   - name: uaa
     release: uaa
     properties:
-      bpm:
-        enabled: true
       encryption:
         encryption_keys:
         - label: uaa-encryption-key-1

@@ -109,6 +109,8 @@ jobs:
       vars_files:
       - common/opsuaa.yml
       - terraform-yaml/state.yml
+      ops_files:
+      - uaa-config/ops/add-bpm.yml
   on_failure:
     put: slack
     params:
