@@ -111,6 +111,7 @@ jobs:
       - terraform-yaml/state.yml
       ops_files:
       - uaa-config/ops/add-bpm.yml
+      - uaa-config/ops/disable-tls.yml
   on_failure:
     put: slack
     params:
