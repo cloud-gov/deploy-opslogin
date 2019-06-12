@@ -30,15 +30,13 @@ instance_groups:
   - name: opsuaa
     static_ips: ((terraform_outputs.bosh_uaa_static_ips))
   instances: 2
-  azs: [z1, z2]
+  azs: [z1]
   vm_extensions:
   - opsuaa-lb
   jobs:
   - name: uaa
     release: uaa
     properties:
-      bpm:
-        enabled: true
       encryption:
         encryption_keys:
         - label: uaa-encryption-key-1
