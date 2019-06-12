@@ -191,6 +191,7 @@ variables:
   type: certificate
   options:
     ca: uaa_ca
+    common_name: uaaSSL
 - name: uaa_login_saml
   type: certificate
   options:
