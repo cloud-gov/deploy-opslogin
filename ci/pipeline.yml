@@ -83,7 +83,7 @@ jobs:
 - name: deploy-ops-uaa
   serial_groups: [ops-uaa]
   plan:
-  - aggregate:
+  - in_parallel:
     - get: uaa-config
       trigger: true
     - get: common
@@ -133,7 +133,7 @@ jobs:
 
 - name: uaa-smoke-tests
   plan:
-  - aggregate:
+  - in_parallel:
     - get: pipeline-tasks
     - get: uaa-deployment
       trigger: true
