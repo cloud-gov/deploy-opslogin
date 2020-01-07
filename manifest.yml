@@ -47,6 +47,11 @@ instance_groups:
         issuer: https://opslogin.fr.cloud.gov
         sslPrivateKey: ((uaa_ssl.private_key))
         sslCertificate: ((uaa_ssl.certificate))
+        servlet:
+          session-cookie:
+            secure: true
+            http-only: true
+            max-age: 900
         jwt:
           signing_key: ((uaa_jwt_signing_key.private_key))
           verification_key: ((uaa_jwt_signing_key.public_key))
