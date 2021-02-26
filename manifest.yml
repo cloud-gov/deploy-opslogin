@@ -60,7 +60,7 @@ instance_groups:
             concourse.admin: 'Group that allows access to Concourse "main" team'
           users:
           - name: credhub_admin_user_staging
-            password: ((//toolingbosh/credhub-staging/credhub-admin-user-password))
+            password: ((/toolingbosh/credhub-staging/credhub-admin-user-password))
             groups:
               - credhub.read
               - credhub.write
