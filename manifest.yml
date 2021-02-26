@@ -58,6 +58,12 @@ instance_groups:
         scim:
           groups:
             concourse.admin: 'Group that allows access to Concourse "main" team'
+          users:
+          - name: credhub_admin_user_staging
+            password: ((/toolingbosh/credhub-staging/credhub-admin-user-password))
+            groups:
+              - credhub.read
+              - credhub.write
         clients:
           admin:
             override: true
@@ -87,6 +93,23 @@ instance_groups:
             authorities: uaa.none,concourse.admin
             redirect-uri: https://ci.fr.cloud.gov/sky/issuer/callback
             secret: ((concourse_client_secret_production))
+
+          # Credhub
+          credhub_cli:
+            override: true
+            authorized-grant-types: password,refresh_token
+            scope: credhub.read,credhub.write
+            authorities: uaa.resource
+            access-token-validity: 30
+            refresh-token-validity: 3600
+            secret: ""
+          credhub_admin_client_staging:
+            override: true
+            authorized-grant-types: client_credentials
+            scope: uaa.none
+            authorities: credhub.read,credhub.write
+            access-token-validity: 3600
+            secret: ((/toolingbosh/credhub-staging/credhub-admin-client-password))
 
           # Platform kibana auth
           platform-kibana-development:
