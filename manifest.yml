@@ -58,6 +58,7 @@ instance_groups:
         scim:
           groups:
             concourse.admin: 'Group that allows access to Concourse "main" team'
+            concourse.pages: 'Members of the Concourse "pages" team'
           users:
           - name: credhub_admin_user_staging
             password: ((/toolingbosh/credhub-staging/credhub-admin-user-password))
