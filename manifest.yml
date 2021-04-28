@@ -84,8 +84,8 @@ instance_groups:
           # Concourse auth
           concourse_staging:
             <<: *client-template
-            scope: openid,concourse.admin,concourse.pages
-            authorities: uaa.none,concourse.admin,concourse.pages
+            scope: openid,concourse.admin,concourse.pages,credhub.read,credhub.write
+            authorities: uaa.none,concourse.admin,concourse.pages,credhub.read,credhub.write
             redirect-uri: https://ci.fr-stage.cloud.gov/sky/issuer/callback
             secret: ((concourse_client_secret_staging))
           concourse_production:
