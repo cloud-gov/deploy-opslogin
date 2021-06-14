@@ -45,7 +45,7 @@ instance_groups:
             - deployment: opsuaa
               domain: bosh
               instance_group: opsuaa
-              network: default
+              network: opsuaa
               query: '*'
   - name: uaa
     release: uaa
