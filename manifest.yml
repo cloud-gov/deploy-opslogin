@@ -10,6 +10,8 @@ releases:
   version: latest
 - name: bpm
   version: latest
+- name: bosh-dns-aliases  
+  version: latest
 
 stemcells:
 - alias: default
@@ -34,6 +36,17 @@ instance_groups:
   vm_extensions:
   - opsuaa-lb
   jobs:
+  - name: bosh-dns-aliases
+    release: bosh-dns-aliases
+    properties:
+      aliases:
+        - domain: opsuaa.internal
+          targets:
+            - deployment: opsuaa
+              domain: bosh
+              instance_group: opsuaa
+              network: default
+              query: '*'
   - name: uaa
     release: uaa
     properties:
