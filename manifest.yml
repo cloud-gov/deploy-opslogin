@@ -236,7 +236,7 @@ variables:
     alternative_names:
     - uaaSSL
     - opsuaa.internal
-    update_mode: converge
+  update_mode: converge
 - name: uaa_login_saml
   type: certificate
   options:
