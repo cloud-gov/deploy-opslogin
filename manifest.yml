@@ -13,7 +13,7 @@ releases:
 
 stemcells:
 - alias: default
-  name: bosh-aws-xen-hvm-ubuntu-xenial-go_agent
+  os: ubuntu-xenial
   version: latest
 
 update:
@@ -233,6 +233,10 @@ variables:
   options:
     ca: uaa_ca
     common_name: uaaSSL
+    alternative_names:
+    - uaaSSL
+    - opsuaa.internal
+    update_mode: converge
 - name: uaa_login_saml
   type: certificate
   options:
