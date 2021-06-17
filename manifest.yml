@@ -124,6 +124,13 @@ instance_groups:
             authorities: credhub.read,credhub.write
             access-token-validity: 3600
             secret: ((/toolingbosh/credhub-staging/credhub-admin-client-password))
+          credhub_pages_client_staging:
+            override: true
+            authorized-grant-types: client_credentials
+            scope: uaa.none,concourse.pages
+            authorities: uaa.none,concourse.pages
+            access-token-validity: 3600
+            secret: ((/toolingbosh/credhub-staging/credhub-pages-client-password))
 
           # Platform kibana auth
           platform-kibana-development:
@@ -164,7 +171,7 @@ instance_groups:
             redirect-uri: https://doomsday.fr.cloud.gov/oauth2/idpresponse
             secret: ((doomsday_client_secret_production))
         login: {client_secret: ((uaa_login_client_secret))}
-        zones: {internal: {hostnames: []}}
+        zones: {internal: {hostnames: ["opsuaa.internal"]}}
       login:
         url: https://opslogin.fr.cloud.gov
         branding:
