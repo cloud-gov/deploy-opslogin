@@ -128,7 +128,7 @@ instance_groups:
             override: true
             authorized-grant-types: client_credentials
             scope: uaa.none,concourse.pages
-            authorities: uaa.none,concourse.pages
+            authorities: uaa.none,concourse.pages,credhub.read,credhub.write
             access-token-validity: 3600
             secret: ((/toolingbosh/credhub-staging/credhub-pages-client-password))
 
