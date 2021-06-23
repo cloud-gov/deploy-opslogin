@@ -134,7 +134,7 @@ instance_groups:
           doomsday_readonly_staging:
             override: true
             authorized-grant-types: client_credentials,refresh_token
-            authorities: credhub.write,credhub.read
+            authorities: credhub.read
             scope: uaa.none
             secret: ((doomsday_readonly_secret_staging))
 
