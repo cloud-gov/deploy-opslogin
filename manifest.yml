@@ -127,8 +127,8 @@ instance_groups:
           credhub_pages_client_staging:
             override: true
             authorized-grant-types: client_credentials
-            scope: uaa.none
-            authorities: uaa.none,concourse.pages,
+            scope: uaa.none,concourse.pages
+            authorities: uaa.none,concourse.pages,credhub.read,credhub.write
             access-token-validity: 3600
             secret: ((/toolingbosh/credhub-staging/credhub-pages-client-password))
           doomsday_readonly_staging:
