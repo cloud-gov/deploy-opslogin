@@ -1,0 +1,4 @@
+#Increase emphemeral disk as part of bionic upgrade
+- type: replace
+  path: /instance_groups/name=credhub/vm_extensions/-
+  value: 5GB_ephemeral_disk
