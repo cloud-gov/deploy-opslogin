@@ -10,12 +10,12 @@ releases:
   version: latest
 - name: bpm
   version: latest
-- name: bosh-dns-aliases  
+- name: bosh-dns-aliases
   version: latest
 
 stemcells:
 - alias: default
-  os: ubuntu-xenial
+  os: ubuntu-bionic
   version: latest
 
 update:
