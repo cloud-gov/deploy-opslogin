@@ -1,4 +1,4 @@
 #Increase emphemeral disk as part of bionic upgrade
 - type: replace
   path: /instance_groups/name=opsuaa/vm_extensions/-
-  value: 5GB_ephemeral_disk
+  value: 10GB_ephemeral_disk
