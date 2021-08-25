@@ -1,4 +1,4 @@
-#Increase emphemeral disk as part of bionic upgrade
+#Increase persistent disk as part of bionic upgrade
 - type: replace
-  path: /instance_groups/name=opsuaa/vm_extensions/-
-  value: 10GB_ephemeral_disk
+  path: /instance_groups/name=opsuaa/persistent_disk_type?
+  value: 5GB
