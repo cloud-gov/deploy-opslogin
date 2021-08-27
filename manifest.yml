@@ -56,6 +56,55 @@ instance_groups:
           passphrase: ((uaa_encryption_key_1))
         active_key_label: uaa-encryption-key-1
       uaa:
+        cors:
+          default:
+            allowed:
+              headers:
+              - Accept
+              - Authorization
+              - Accept-Language
+              - Content-Type
+              - Content-Language
+              - If-Match
+              - X-Requested-With
+              - X-Identity-Zone-Id
+              - X-Identity-Zone-Subdomain
+              origin:
+              - ^cloud.gov$
+              - ^.*\.cloud.gov$
+              - ^localhost$
+              - ^.*\.localhost$
+              methods:
+              - GET
+              - PUT
+              - POST
+              - DELETE
+              - OPTIONS
+              credentials: true
+            max_age: 10
+          xhr:
+            allowed:
+              headers:
+              - Accept
+              - Authorization
+              - Accept-Language
+              - Content-Type
+              - Content-Language
+              - If-Match
+              - X-Requested-With
+              - X-Identity-Zone-Id
+              - X-Identity-Zone-Subdomain
+              origin:
+              - ^cloud.gov$
+              - ^.*\.cloud.gov$
+              - ^localhost$
+              - ^.*\.localhost$
+              methods:
+              - GET
+              - POST
+              - OPTIONS
+              credentials: true
+            max_age: 10
         url: https://opsuaa.fr.cloud.gov
         issuer: https://opslogin.fr.cloud.gov
         sslPrivateKey: ((uaa_ssl.private_key))
