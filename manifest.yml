@@ -203,11 +203,16 @@ instance_groups:
             scope: openid,email,profile
             redirect-uri: https://logs-platform.fr.cloud.gov/oauth2/callback
             secret: ((platform_kibana_client_secret_production))
-          platform-kibana-easta:
+          platform-kibana-east:
             <<: *client-template
             scope: openid,email,profile
-            redirect-uri: https://logs-platform.fr.ea.cloud.gov/oauth2/callback
-            secret: ((platform_kibana_client_secret_easta))
+            redirect-uri: https://logs-platform.fr.east.cloud.gov/oauth2/callback
+            secret: ((platform_kibana_client_secret_east))
+          platform-kibana-west:
+            <<: *client-template
+            scope: openid,email,profile
+            redirect-uri: https://logs-platform.fr.west.cloud.gov/oauth2/callback
+            secret: ((platform_kibana_client_secret_west))
 
           # Monitoring auth
           prometheus-staging:
@@ -220,11 +225,16 @@ instance_groups:
             scope: openid,email,profile
             redirect-uri: https://prometheus.fr.cloud.gov/oauth2/callback,https://alertmanager.fr.cloud.gov/oauth2/callback,https://grafana.fr.cloud.gov/oauth2/callback
             secret: ((prometheus_client_secret_production))
-          prometheus-easta:
+          prometheus-east:
             <<: *client-template
             scope: openid,email,profile
-            redirect-uri: https://prometheus.fr.ea.cloud.gov/oauth2/callback,https://alertmanager.fr.ea.cloud.gov/oauth2/callback,https://grafana.fr.ea.cloud.gov/oauth2/callback
-            secret: ((prometheus_client_secret_easta))
+            redirect-uri: https://prometheus.fr.east.cloud.gov/oauth2/callback,https://alertmanager.fr.east.cloud.gov/oauth2/callback,https://grafana.fr.east.cloud.gov/oauth2/callback
+            secret: ((prometheus_client_secret_east))
+          prometheus-west:
+            <<: *client-template
+            scope: openid,email,profile
+            redirect-uri: https://prometheus.fr.west.cloud.gov/oauth2/callback,https://alertmanager.fr.west.cloud.gov/oauth2/callback,https://grafana.fr.west.cloud.gov/oauth2/callback
+            secret: ((prometheus_client_secret_west))
           doomsday-staging:
             <<: *client-template
             scope: openid,email,profile
@@ -235,12 +245,16 @@ instance_groups:
             scope: openid,email,profile
             redirect-uri: https://doomsday.fr.cloud.gov/oauth2/idpresponse
             secret: ((doomsday_client_secret_production))
-          doomsday-easta:
+          doomsday-east:
             <<: *client-template
             scope: openid,email,profile
-            redirect-uri: https://doomsday.fr.ea.cloud.gov/oauth2/idpresponse
-            secret: ((doomsday_client_secret_easta))
-
+            redirect-uri: https://doomsday.fr.east.cloud.gov/oauth2/idpresponse
+            secret: ((doomsday_client_secret_east))
+          doomsday-west:
+            <<: *client-template
+            scope: openid,email,profile
+            redirect-uri: https://doomsday.fr.west.cloud.gov/oauth2/idpresponse
+            secret: ((doomsday_client_secret_west))
         login: {client_secret: ((uaa_login_client_secret))}
         zones: {internal: {hostnames: ["opsuaa.internal"]}}
       login:
@@ -306,19 +320,25 @@ variables:
   type: password
 - name: platform_kibana_client_secret_production
   type: password
-- name: platform_kibana_client_secret_easta
+- name: platform_kibana_client_secret_east
+  type: password
+- name: platform_kibana_client_secret_west
   type: password
 - name: prometheus_client_secret_staging
   type: password
 - name: prometheus_client_secret_production
   type: password
-- name: prometheus_client_secret_easta
+- name: prometheus_client_secret_east
+  type: password
+- name: prometheus_client_secret_west
   type: password
 - name: doomsday_client_secret_staging
   type: password
 - name: doomsday_client_secret_production
   type: password
-- name: doomsday_client_secret_easta
+- name: doomsday_client_secret_east
+  type: password
+- name: doomsday_client_secret_west
   type: password
 - name: uaa_encryption_key_1
   type: password
