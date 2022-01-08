@@ -213,37 +213,11 @@ variables:
   type: password
 - name: bosh_ci_client_secret
   type: password
-- name: doomsday_readonly_secret_staging
-  type: password
-- name: concourse_client_secret_staging
-  type: password
-- name: concourse_client_secret_production
-  type: password
-- name: platform_kibana_client_secret_development
-  type: password
-- name: platform_kibana_client_secret_staging
-  type: password
-- name: platform_kibana_client_secret_production
-  type: password
 - name: platform_kibana_client_secret_east
   type: password
 - name: platform_kibana_client_secret_west
   type: password
-- name: prometheus_client_secret_staging
-  type: password
-- name: prometheus_client_secret_production
-  type: password
-- name: prometheus_client_secret_east
-  type: password
 - name: prometheus_client_secret_west
-  type: password
-- name: doomsday_client_secret_staging
-  type: password
-- name: doomsday_client_secret_production
-  type: password
-- name: doomsday_client_secret_east
-  type: password
-- name: doomsday_client_secret_west
   type: password
 - name: uaa_encryption_key_1
   type: password
