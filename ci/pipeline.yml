@@ -77,9 +77,9 @@ resources:
 - name: uaa-deployment-west
   type: bosh-deployment
   source:
-    target: ((tooling-east-bosh-target))
-    client: ((tooling-east-bosh-client))
-    client_secret: ((tooling-east-bosh-client-secret))
+    target: ((tooling-west-bosh-target))
+    client: ((tooling-west-bosh-client))
+    client_secret: ((tooling-west-bosh-client-secret))
     ca_cert: ((ca-cert))
     deployment: opsuaa
 
