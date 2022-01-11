@@ -146,11 +146,17 @@ instance_groups:
             secret: ""
 
           # Platform kibana auth
-          platform-kibana-west:
+          platform-kibana-westb:
             <<: *client-template
             scope: openid,email,profile
-            redirect-uri: https://logs-platform.fr.west.cloud.gov/oauth2/callback
-            secret: ((platform_kibana_client_secret_west))
+            redirect-uri: https://logs-platform.fr.wb.cloud.gov/oauth2/callback
+            secret: ((platform_kibana_client_secret_westb))
+
+          platform-kibana-westc:
+            <<: *client-template
+            scope: openid,email,profile
+            redirect-uri: https://logs-platform.fr.wc.cloud.gov/oauth2/callback
+            secret: ((platform_kibana_client_secret_westc))
 
           # Monitoring auth
           prometheus-west:
@@ -212,9 +218,9 @@ variables:
   type: password
 - name: bosh_ci_client_secret
   type: password
-- name: platform_kibana_client_secret_east
+- name: platform_kibana_client_secret_westb
   type: password
-- name: platform_kibana_client_secret_west
+- name: platform_kibana_client_secret_westc
   type: password
 - name: prometheus_client_secret_west
   type: password
