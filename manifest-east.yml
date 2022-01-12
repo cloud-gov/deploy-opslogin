@@ -222,7 +222,7 @@ variables:
   type: password
 - name: platform_kibana_client_secret_eastb
   type: password
-- name: prometheus_client_secret_west
+- name: prometheus_client_secret_east
   type: password
 - name: uaa_encryption_key_1
   type: password
