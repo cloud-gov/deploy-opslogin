@@ -41,6 +41,13 @@ resources:
     versioned_file: ((tf-state-file-west))
     region_name: ((aws-region))
 
+- name: terraform-yaml-east
+  type: s3-iam
+  source:
+    bucket: ((tf-state-bucket))
+    versioned_file: ((tf-state-file-east))
+    region_name: ((aws-region))
+
 - name: common
   type: s3-iam
   source:
@@ -87,6 +94,15 @@ resources:
     target: ((tooling-west-bosh-target))
     client: ((tooling-west-bosh-client))
     client_secret: ((tooling-west-bosh-client-secret))
+    ca_cert: ((ca-cert))
+    deployment: opsuaa
+
+- name: uaa-deployment-east
+  type: bosh-deployment
+  source:
+    target: ((tooling-east-bosh-target))
+    client: ((tooling-east-bosh-client))
+    client_secret: ((tooling-east-bosh-client-secret))
     ca_cert: ((ca-cert))
     deployment: opsuaa
 
@@ -234,6 +250,79 @@ jobs:
     params:
       text: |
         :x: UAA Smoke Tests for opslogin WEST FAILED
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
+
+- name: deploy-ops-uaa-east
+  serial_groups: [ops-uaa]
+  plan:
+  - in_parallel:
+    - get: uaa-config
+      trigger: true
+    - get: common
+      trigger: true
+    - get: terraform-yaml
+      resource: terraform-yaml-east
+    - get: stemcell-bionic
+      trigger: true
+    - get: uaa-release
+      trigger: true
+    - get: uaa-customized-release
+      trigger: true
+    - get: secureproxy-release
+      trigger: true
+  - put: uaa-deployment-east
+    params:
+      manifest: uaa-config/manifest-east.yml
+      stemcells:
+      - stemcell-bionic/*.tgz
+      releases:
+      - uaa-release/*.tgz
+      - uaa-customized-release/*.tgz
+      - secureproxy-release/*.tgz
+      vars_files:
+      - common/opsuaa.yml
+      - terraform-yaml/state.yml
+      ops_files:
+      - uaa-config/ops/add-bpm.yml
+      - uaa-config/ops/disable-tls.yml
+      - uaa-config/ops/disk.yml
+  on_failure:
+    put: slack
+    params:
+      text: |
+        :x: FAILED to deploy ops UAA EAST
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
+  on_success:
+    put: slack
+    params:
+      text: |
+        :white_check_mark: Successfully deployed ops UAA EAST
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
+
+- name: uaa-smoke-tests-east
+  plan:
+  - in_parallel:
+    - get: pipeline-tasks
+    - get: uaa-deployment-east
+      trigger: true
+  - task: smoke-tests
+    file: pipeline-tasks/uaa-smoke-tests.yml
+    params:
+      BASE_URL: https://opslogin.fr.east.cloud.gov
+  on_failure:
+    put: slack
+    params:
+      text: |
+        :x: UAA Smoke Tests for opslogin WEST EAST
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
       channel: ((slack-channel))
       username: ((slack-username))
