@@ -283,7 +283,6 @@ jobs:
       - uaa-customized-release/*.tgz
       - secureproxy-release/*.tgz
       vars_files:
-      - common/opsuaa.yml
       - terraform-yaml/state.yml
       ops_files:
       - uaa-config/ops/add-bpm.yml
