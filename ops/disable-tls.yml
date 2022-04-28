@@ -1,3 +1,0 @@
-- type: replace
-  path: /instance_groups/name=opsuaa/jobs/name=uaa/properties/uaadb/tls?
-  value: disabled
