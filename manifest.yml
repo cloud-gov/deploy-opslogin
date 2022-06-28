@@ -85,7 +85,7 @@ instance_groups:
           S0IGvcd2FZjNSNPttNAK7YuBVsZ0m2nIH1SLp//00v7yAHIgytQwwB17PBcp4NXD
           pCfTa27ng9mMMC2YLqWQpW4TkqjDin2ZC+5X/mbrjzTvVg==
           -----END CERTIFICATE-----
-        - |+  
+        - |+
           # Amazon RDS us-gov-west-1 CA expires May22
           -----BEGIN CERTIFICATE-----
           MIIECjCCAvKgAwIBAgICEAAwDQYJKoZIhvcNAQELBQAwgZMxCzAJBgNVBAYTAlVT
@@ -385,6 +385,12 @@ instance_groups:
             authorities: credhub.read, credhub.write
             scope: uaa.none,credhub.read
             secret: ((doomsday_readonly_secret_staging))
+          pgp_credhub_client:
+            override: true
+            authorized-grant-types: client_credentials,refresh_token
+            authorities: credhub.read, credhub.write
+            scope: uaa.none,credhub.read,credhub.write
+            secret: ((pgp_credhub_client_secret))
 
           # Platform kibana auth
           platform-kibana-development:
@@ -508,6 +514,8 @@ variables:
 - name: bosh_ci_client_secret
   type: password
 - name: doomsday_readonly_secret_staging
+  type: password
+- name: pgp_credhub_client_secret
   type: password
 - name: concourse_client_secret_staging
   type: password
