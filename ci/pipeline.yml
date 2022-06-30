@@ -18,12 +18,14 @@ resources:
 - name: uaa-config
   type: git
   source:
+    commit_verification_keys: ((cloud-gov-pgp-keys))
     uri: ((uaa-config-git-uri))
     branch: ((uaa-config-git-branch))
 
 - name: pipeline-tasks
   type: git
   source:
+    commit_verification_keys: ((cloud-gov-pgp-keys))
     uri: ((pipeline-tasks-git-uri))
     branch: ((pipeline-tasks-git-branch))
 
@@ -118,7 +120,7 @@ jobs:
       text: |
         :x: FAILED to deploy ops UAA
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: ((slack-channel))
+      channel: '#cg-platform'
       username: ((slack-username))
       icon_url: ((slack-icon-url))
   on_success:
@@ -127,7 +129,7 @@ jobs:
       text: |
         :white_check_mark: Successfully deployed ops UAA
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: ((slack-channel))
+      channel: '#cg-platform-news'
       username: ((slack-username))
       icon_url: ((slack-icon-url))
 
@@ -147,7 +149,7 @@ jobs:
       text: |
         :x: UAA Smoke Tests for opslogin FAILED
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: ((slack-channel))
+      channel: '#cg-platform'
       username: ((slack-username))
       icon_url: ((slack-icon-url))
 
