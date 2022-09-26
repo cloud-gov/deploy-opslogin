@@ -1,6 +1,15 @@
 ---
 name: opsuaa
 
+templates:
+  client: &client-template
+    authorities: uaa.none
+    authorized-grant-types: authorization_code,client_credentials,refresh_token
+    autoapprove: true
+    override: true
+    access-token-validity: 1800
+    refresh-token-validity: 1800
+    
 releases:
 - name: uaa
   version: latest
@@ -569,11 +578,4 @@ variables:
     ca: uaa_ca
     common_name: uaa_login_saml
 
-templates:
-  client: &client-template
-    authorities: uaa.none
-    authorized-grant-types: authorization_code,client_credentials,refresh_token
-    autoapprove: true
-    override: true
-    access-token-validity: 1800
-    refresh-token-validity: 1800
+
