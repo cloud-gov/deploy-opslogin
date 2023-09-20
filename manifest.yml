@@ -432,12 +432,12 @@ instance_groups:
           prometheus-staging:
             <<: *client-template
             scope: openid,email,profile
-            redirect-uri: https://prometheus.fr-stage.cloud.gov/oauth2/callback,https://alertmanager.fr-stage.cloud.gov/oauth2/callback,https://grafana.fr-stage.cloud.gov/oauth2/callback
+            redirect-uri: https://prometheus.fr-stage.cloud.gov/oauth2/callback,https://alertmanager.fr-stage.cloud.gov/oauth2/callback,https://grafana.fr-stage.cloud.gov/oauth2/callback,https://grafana.fr-stage.cloud.gov/login/generic_oauth
             secret: ((prometheus_client_secret_staging))
           prometheus-production:
             <<: *client-template
             scope: openid,email,profile
-            redirect-uri: https://prometheus.fr.cloud.gov/oauth2/callback,https://alertmanager.fr.cloud.gov/oauth2/callback,https://grafana.fr.cloud.gov/oauth2/callback
+            redirect-uri: https://prometheus.fr.cloud.gov/oauth2/callback,https://alertmanager.fr.cloud.gov/oauth2/callback,https://grafana.fr.cloud.gov/oauth2/callback,https://grafana.fr.cloud.gov/login/generic_oauth
             secret: ((prometheus_client_secret_production))
           prometheus-east:
             <<: *client-template
