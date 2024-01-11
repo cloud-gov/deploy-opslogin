@@ -405,7 +405,7 @@ instance_groups:
           defectdojo_staging:
             <<: *client-template
             scope: openid,email,profile
-            redirect-uri: https://dojo.fr.cloud.gov/oauth2/idpresponse
+            redirect-uri: https://defectdojo.fr-stage.cloud.gov/oauth2/idpresponse
             secret: ((defectdojo_client_secret_staging))
 
           # Platform kibana auth
