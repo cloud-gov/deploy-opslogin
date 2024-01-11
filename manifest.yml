@@ -401,6 +401,13 @@ instance_groups:
             scope: uaa.none,credhub.read,credhub.write
             secret: ((pgp_credhub_client_secret))
 
+          # Defect Dojo auth
+          defectdojo_staging:
+            <<: *client-template
+            scope: openid,email,profile
+            redirect-uri: https://dojo.fr.cloud.gov/oauth2/idpresponse
+            secret: ((defectdojo_client_secret_staging))
+
           # Platform kibana auth
           platform-kibana-development:
             <<: *client-template
@@ -555,6 +562,8 @@ variables:
 - name: doomsday_client_secret_east
   type: password
 - name: doomsday_client_secret_west
+  type: password
+- name: defectdojo_client_secret_staging
   type: password
 - name: uaa_encryption_key_1
   type: password
