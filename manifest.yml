@@ -406,6 +406,7 @@ instance_groups:
           defectdojo_staging:
             <<: *client-template
             scope: openid,email,profile,uaa.user,scim.read,uaa.resource,scim.userids,oauth.approvals
+            authorites: scim.read,uaa.admin,uaa.resource
             redirect-uri: https://defectdojo.fr-stage.cloud.gov/oauth2/idpresponse,https://defectdojo.fr-stage.cloud.gov/complete/oidc/
             secret: ((defectdojo_client_secret_staging))
 
