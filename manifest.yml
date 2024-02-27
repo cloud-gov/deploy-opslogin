@@ -9,7 +9,7 @@ templates:
     override: true
     access-token-validity: 1800
     refresh-token-validity: 1800
-    
+
 releases:
 - name: uaa
   version: latest
@@ -316,6 +316,7 @@ instance_groups:
             concourse.admin: 'Group that allows access to Concourse "main" team'
             concourse.pages: 'Members of the Concourse "pages" team'
             concourse.viewer: 'Support members holding viewers role'
+            prometheus-support: 'Support members access to Prometheus'
           users:
           - name: credhub_admin_user_staging
             password: ((/toolingbosh/credhub-staging/credhub-admin-user-password))
@@ -324,6 +325,7 @@ instance_groups:
               - credhub.write
         clients:
           admin:
+
             override: true
             authorized-grant-types: client_credentials
             scope: ""
@@ -439,12 +441,12 @@ instance_groups:
           # Monitoring auth
           prometheus-staging:
             <<: *client-template
-            scope: openid,email,profile
+            scope: openid,email,profile, prometheus-support, concourse.pages, concourse.admin
             redirect-uri: https://prometheus.fr-stage.cloud.gov/oauth2/callback,https://alertmanager.fr-stage.cloud.gov/oauth2/callback,https://grafana.fr-stage.cloud.gov/oauth2/callback,https://grafana.fr-stage.cloud.gov/login/generic_oauth
             secret: ((prometheus_client_secret_staging))
           prometheus-production:
             <<: *client-template
-            scope: openid,email,profile
+            scope: openid,email,profile, prometheus-support, concourse.pages, concourse.admin
             redirect-uri: https://prometheus.fr.cloud.gov/oauth2/callback,https://alertmanager.fr.cloud.gov/oauth2/callback,https://grafana.fr.cloud.gov/oauth2/callback,https://grafana.fr.cloud.gov/login/generic_oauth
             secret: ((prometheus_client_secret_production))
           prometheus-east:
