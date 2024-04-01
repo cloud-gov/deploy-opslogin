@@ -73,7 +73,7 @@ opslogin:
 EOF
 
 pushd $workspace
-  bosh -e $BOSH_TARGET deploy -d opsuaa cloud-gov/cg-deploy-opslogin/manifest.yml \
+  bosh -e $BOSH_TARGET deploy -d opsuaa cloud-gov/cg-deploy-opslogin/bosh-deployment/manifest.yml \
     -o cloud-gov/cg-deploy-opslogin/ops/add-bpm.yml \
     -o cloud-gov/cg-deploy-opslogin/ops/disk.yml \
     -l ${config_dir}/domains.yml \
