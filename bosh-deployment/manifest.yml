@@ -35,7 +35,7 @@ update:
 
 instance_groups:
 - name: opsuaa
-  vm_type: m5.large.opsuaa
+  vm_type: m5.xlarge.opsuaa
   stemcell: default
   networks:
   - name: opsuaa
