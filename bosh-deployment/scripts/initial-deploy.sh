@@ -21,7 +21,7 @@ exit 1
 fi
 
 # CLONE 
-workspace="$HOME/deploy/opslogin"
+workspace="$HOME/deploy/opsuaa"
 rm -fr $workspace
 mkdir -p $workspace
 mkdir -p ${workspace}/cloud-gov
@@ -73,7 +73,7 @@ opslogin:
 EOF
 
 pushd $workspace
-  bosh -e $BOSH_TARGET deploy -d opslogin cloud-gov/cg-deploy-opslogin/manifest.yml \
+  bosh -e $BOSH_TARGET deploy -d opsuaa cloud-gov/cg-deploy-opslogin/manifest.yml \
     -o cloud-gov/cg-deploy-opslogin/ops/add-bpm.yml \
     -o cloud-gov/cg-deploy-opslogin/ops/disk.yml \
     -l ${config_dir}/domains.yml \
