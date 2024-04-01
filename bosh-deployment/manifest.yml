@@ -39,7 +39,7 @@ instance_groups:
   stemcell: default
   networks:
   - name: opsuaa
-    static_ips: ((terraform_outputs.bosh_uaa_static_ips))
+    static_ips: ((terraform_outputs.bosh_uaa_static_ips_az1))
   instances: 1
   azs: [z1]
   vm_extensions:
