@@ -27,6 +27,7 @@ mkdir -p $workspace
 mkdir -p ${workspace}/cloud-gov
 pushd ${workspace}/cloud-gov
     git clone https://github.com/cloud-gov/cg-deploy-opslogin.git
+    cd cg-deploy-opslogin
     git checkout f140
 popd
 
