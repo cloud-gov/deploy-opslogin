@@ -2,7 +2,7 @@
 
 set -e
 
-if [ -z "$BOSH_TARGET" ] || [ -z "$DOMAIN" ] || [ -z "$STACK_NAME" ] || [ -z "$STEMCELL_SHA1"] || [ -z "$STEMCELL_VERSION" ]
+if [ -z "$BOSH_TARGET" ] || [ -z "$DOMAIN" ] || [ -z "$STACK_NAME" ] || [ -z "$STEMCELL_SHA1" ] || [ -z "$STEMCELL_VERSION" ]
 then
 cat << EOF
   ERROR: Missing environment variable(s).
