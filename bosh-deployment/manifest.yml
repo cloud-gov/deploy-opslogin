@@ -35,7 +35,7 @@ update:
 
 instance_groups:
 - name: opsuaa
-  vm_type: t3.medium
+  vm_type: ((instance_type))
   stemcell: default
   networks:
   - name: opsuaa
