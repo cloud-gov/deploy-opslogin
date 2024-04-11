@@ -323,6 +323,19 @@ instance_groups:
             scope: ""
             authorities: clients.read,clients.write,clients.secret,uaa.admin,scim.read,scim.write,password.write
             secret: ((uaa_admin_client_secret)) 
+          concourse:
+            <<: *client-template
+            scope: openid,concourse.admin,concourse.pages,concourse.viewer,credhub.read,credhub.write
+            authorities: uaa.none,concourse.admin,concourse.pages,concourse.viewer,credhub.read,credhub.write
+            redirect-uri: ((concourse.redirect-uri))
+            secret: ((concourse_client_secret))
+          credhub_admin_client:
+            override: true
+            authorized-grant-types: client_credentials
+            scope: uaa.none
+            authorities: credhub.read,credhub.write
+            access-token-validity: 3600
+            secret: ((/toolingbosh/credhub-staging/credhub-admin-client-password))
         login: 
           client_secret: ((uaa_login_client_secret)) 
         zones: 
@@ -371,6 +384,8 @@ instance_groups:
         proxy_port: 8080
 
 variables:
+- name: concourse_client_secret
+  type: password
 - name: uaa_jwt_signing_key
   type: rsa
 - name: uaa_admin_client_secret
