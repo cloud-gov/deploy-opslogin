@@ -335,7 +335,7 @@ instance_groups:
             scope: uaa.none
             authorities: credhub.read,credhub.write
             access-token-validity: 3600
-            secret: ((/toolingbosh/credhub-staging/credhub-admin-client-password))
+            secret: ((/tooling/credhub/credhub-admin-client-password))
         login: 
           client_secret: ((uaa_login_client_secret)) 
         zones: 
