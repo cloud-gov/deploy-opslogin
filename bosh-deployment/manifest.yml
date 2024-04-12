@@ -317,7 +317,7 @@ instance_groups:
             concourse.viewer: 'Support members holding viewers role'
           users:
           - name: credhub_admin_user
-            password: ((/toolingbosh/credhub/credhub-admin-user-password))
+            password: ((/tooling/credhub/credhub-admin-user-password))
             groups:
               - credhub.read
               - credhub.write
