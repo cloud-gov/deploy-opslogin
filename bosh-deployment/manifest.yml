@@ -314,8 +314,13 @@ instance_groups:
         scim:
           groups:
             concourse.admin: 'Group that allows access to Concourse "main" team'
-            concourse.pages: 'Members of the Concourse "pages" team'
             concourse.viewer: 'Support members holding viewers role'
+          users:
+          - name: credhub_admin_user
+            password: ((/toolingbosh/credhub/credhub-admin-user-password))
+            groups:
+              - credhub.read
+              - credhub.write
         clients:
           admin:
             override: true
