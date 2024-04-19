@@ -399,15 +399,10 @@ variables:
   type: password
 - name: uaa_encryption_key_1
   type: password
-- name: uaa_ca
-  type: certificate
-  options:
-    is_ca: true
-    common_name: uaaCA
 - name: uaa_ssl
   type: certificate
   options:
-    ca: uaa_ca
+    ca: /root_ca
     common_name: uaaSSL
     alternative_names:
     - uaaSSL
@@ -416,7 +411,7 @@ variables:
 - name: uaa_login_saml
   type: certificate
   options:
-    ca: uaa_ca
+    ca: /root_ca
     common_name: uaa_login_saml
 
 
