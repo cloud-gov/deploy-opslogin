@@ -356,7 +356,7 @@ instance_groups:
             scope: openid,concourse.admin,concourse.pages,concourse.viewer
             authorities: uaa.none,concourse.admin,concourse.pages,concourse.viewer
             redirect-uri: https://ci-pages.fr.cloud.gov/sky/issuer/callback
-            secret: ((concourse_client_secret_production-pages))
+            secret: ((concourse_client_secret_production_pages))
           # Credhub
           credhub_cli:
             override: true
