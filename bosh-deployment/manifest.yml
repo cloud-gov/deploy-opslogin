@@ -65,6 +65,7 @@ instance_groups:
           passphrase: ((uaa_encryption_key_1)) 
         active_key_label: uaa-encryption-key-1
       uaa:
+        logging_level: debug
         ca_certs:
         - |
           # UAA requires each cert as an array object
