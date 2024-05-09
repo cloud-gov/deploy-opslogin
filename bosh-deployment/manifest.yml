@@ -14,7 +14,7 @@ releases:
 - name: uaa
   version: latest
 - name: uaa-customized
-  version: latest
+  version: 0.0.58
 - name: secureproxy
   version: latest
 - name: bpm
