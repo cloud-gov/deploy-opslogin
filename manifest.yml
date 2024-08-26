@@ -9,7 +9,7 @@ templates:
     override: true
     access-token-validity: 1800
     refresh-token-validity: 1800
-    
+
 releases:
 - name: uaa
   version: latest
@@ -351,12 +351,7 @@ instance_groups:
             authorities: uaa.none,concourse.admin,concourse.pages,concourse.viewer
             redirect-uri: https://ci.fr.cloud.gov/sky/issuer/callback
             secret: ((concourse_client_secret_production))
-          concourse_production-pages:
-            <<: *client-template
-            scope: openid,concourse.admin,concourse.pages,concourse.viewer
-            authorities: uaa.none,concourse.admin,concourse.pages,concourse.viewer
-            redirect-uri: https://ci-pages.fr.cloud.gov/sky/issuer/callback
-            secret: ((concourse_client_secret_production_pages))
+
           # Credhub
           credhub_cli:
             override: true
@@ -472,6 +467,11 @@ instance_groups:
             scope: openid,email,profile
             redirect-uri: https://doomsday.fr.cloud.gov/oauth2/idpresponse
             secret: ((doomsday_client_secret_production))
+          nessus-production:
+            <<: *client-template
+            scope: openid,email,profile
+            redirect-uri: https://nessus.fr.cloud.gov/oauth2/idpresponse
+            secret: ((nessus_client_secret_production))
           doomsday-east:
             <<: *client-template
             scope: openid,email,profile
@@ -543,8 +543,6 @@ variables:
   type: password
 - name: concourse_client_secret_production
   type: password
-- name: concourse_client_secret_production_pages
-  type: password
 - name: platform_kibana_client_secret_development
   type: password
 - name: platform_kibana_client_secret_staging
@@ -566,6 +564,8 @@ variables:
 - name: doomsday_client_secret_staging
   type: password
 - name: doomsday_client_secret_production
+  type: password
+- name: nessus_client_secret_production
   type: password
 - name: doomsday_client_secret_east
   type: password
@@ -594,5 +594,3 @@ variables:
   options:
     ca: uaa_ca
     common_name: uaa_login_saml
-
-
