@@ -351,12 +351,7 @@ instance_groups:
             authorities: uaa.none,concourse.admin,concourse.pages,concourse.viewer
             redirect-uri: https://ci.fr.cloud.gov/sky/issuer/callback
             secret: ((concourse_client_secret_production))
-          concourse_production-pages:
-            <<: *client-template
-            scope: openid,concourse.admin,concourse.pages,concourse.viewer
-            authorities: uaa.none,concourse.admin,concourse.pages,concourse.viewer
-            redirect-uri: https://ci-pages.fr.cloud.gov/sky/issuer/callback
-            secret: ((concourse_client_secret_production_pages))
+
           # Credhub
           credhub_cli:
             override: true
@@ -548,8 +543,6 @@ variables:
   type: password
 - name: concourse_client_secret_production
   type: password
-- name: concourse_client_secret_production_pages
-  type: password
 - name: platform_kibana_client_secret_development
   type: password
 - name: platform_kibana_client_secret_staging
@@ -571,6 +564,8 @@ variables:
 - name: doomsday_client_secret_staging
   type: password
 - name: doomsday_client_secret_production
+  type: password
+- name: nessus_client_secret_production
   type: password
 - name: doomsday_client_secret_east
   type: password
