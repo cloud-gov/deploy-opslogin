@@ -109,6 +109,7 @@ resources:
     bucket: ((bosh-releases-bucket))
     regexp: uaa-customized-(.*).tgz
     region_name: ((aws-region))
+    endpoint: s3-fips.((aws-region)).amazonaws.com
 
 - name: secureproxy-release
   type: s3-iam
@@ -116,6 +117,7 @@ resources:
     bucket: ((bosh-releases-bucket))
     regexp: secureproxy-(.*).tgz
     region_name: ((aws-region))
+    endpoint: s3-fips.((aws-region)).amazonaws.com
 
 - name: uaa-deployment
   type: bosh-deployment
