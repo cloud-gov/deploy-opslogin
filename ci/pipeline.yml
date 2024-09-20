@@ -83,6 +83,7 @@ resources:
     bucket: ((tf-state-bucket))
     versioned_file: ((tf-state-file))
     region_name: ((aws-region))
+    endpoint: s3-fips.((aws-region)).amazonaws.com
 
 - name: common
   type: s3-iam
@@ -90,6 +91,7 @@ resources:
     bucket: ((secrets-bucket))
     versioned_file: opsuaa.yml
     region_name: ((aws-region))
+    endpoint: s3-fips.((aws-region)).amazonaws.com
 
 - name: stemcell-jammy
   type: bosh-io-stemcell
