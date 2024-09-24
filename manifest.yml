@@ -401,6 +401,12 @@ instance_groups:
             authorities: credhub.read, credhub.write
             scope: uaa.none,credhub.read,credhub.write
             secret: ((pgp_credhub_client_secret))
+          opensearch_proxy_ci_client:
+            override: true
+            authorized-grant-types: client_credentials,refresh_token
+            authorities: credhub.read, credhub.write
+            scope: uaa.none,credhub.read,credhub.write
+            secret: ((opensearch_proxy_ci_client_secret))
 
           # Defect Dojo auth
           defectdojo_staging:
@@ -538,6 +544,8 @@ variables:
 - name: doomsday_readonly_secret_staging
   type: password
 - name: pgp_credhub_client_secret
+  type: password
+- name: opensearch_proxy_ci_client_secret
   type: password
 - name: concourse_client_secret_staging
   type: password
