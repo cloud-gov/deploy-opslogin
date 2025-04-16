@@ -11,21 +11,21 @@ templates:
     refresh-token-validity: 1800
 
 releases:
-- name: uaa
-  version: latest
-- name: uaa-customized
-  version: latest
-- name: secureproxy
-  version: latest
-- name: bpm
-  version: latest
-- name: bosh-dns-aliases
-  version: latest
+  - name: uaa
+    version: latest
+  - name: uaa-customized
+    version: latest
+  - name: secureproxy
+    version: latest
+  - name: bpm
+    version: latest
+  - name: bosh-dns-aliases
+    version: latest
 
 stemcells:
-- alias: default
-  os: ubuntu-jammy
-  version: latest
+  - alias: default
+    os: ubuntu-jammy
+    version: latest
 
 update:
   canaries: 1
@@ -34,614 +34,625 @@ update:
   max_in_flight: 4
 
 instance_groups:
-- name: opsuaa
-  vm_type: m6i.xlarge.opsuaa
-  stemcell: default
-  networks:
   - name: opsuaa
-    static_ips: ((terraform_outputs.bosh_uaa_static_ips))
-  instances: 2
-  azs: [z1]
-  vm_extensions:
-  - opsuaa-lb
-  jobs:
-  - name: bosh-dns-aliases
-    release: bosh-dns-aliases
-    properties:
-      aliases:
-        - domain: opsuaa.internal
-          targets:
-            - deployment: opsuaa
-              domain: bosh
-              instance_group: opsuaa
-              network: opsuaa
-              query: '*'
-  - name: uaa
-    release: uaa
-    properties:
-      encryption:
-        encryption_keys:
-        - label: uaa-encryption-key-1
-          passphrase: ((uaa_encryption_key_1))
-        active_key_label: uaa-encryption-key-1
-      uaa:
-        ca_certs:
-        - |
-          # UAA requires each cert as an array object
-          # RDS US-GOV-WEST-1-BUNDLE.PEM UPDATED APRIL 2022
-          # Amazon RDS GovCloud Root CA expires May22
-          -----BEGIN CERTIFICATE-----
-          MIIEDjCCAvagAwIBAgIJAMM61RQn3/kdMA0GCSqGSIb3DQEBCwUAMIGTMQswCQYD
-          VQQGEwJVUzEQMA4GA1UEBwwHU2VhdHRsZTETMBEGA1UECAwKV2FzaGluZ3RvbjEi
-          MCAGA1UECgwZQW1hem9uIFdlYiBTZXJ2aWNlcywgSW5jLjETMBEGA1UECwwKQW1h
-          em9uIFJEUzEkMCIGA1UEAwwbQW1hem9uIFJEUyBHb3ZDbG91ZCBSb290IENBMB4X
-          DTE3MDUxOTIyMjkxMVoXDTIyMDUxODIyMjkxMVowgZMxCzAJBgNVBAYTAlVTMRAw
-          DgYDVQQHDAdTZWF0dGxlMRMwEQYDVQQIDApXYXNoaW5ndG9uMSIwIAYDVQQKDBlB
-          bWF6b24gV2ViIFNlcnZpY2VzLCBJbmMuMRMwEQYDVQQLDApBbWF6b24gUkRTMSQw
-          IgYDVQQDDBtBbWF6b24gUkRTIEdvdkNsb3VkIFJvb3QgQ0EwggEiMA0GCSqGSIb3
-          DQEBAQUAA4IBDwAwggEKAoIBAQDGS9bh1FGiJPT+GRb3C5aKypJVDC1H2gbh6n3u
-          j8cUiyMXfmm+ak402zdLpSYMaxiQ7oL/B3wEmumIpRDAsQrSp3B/qEeY7ipQGOfh
-          q2TXjXGIUjiJ/FaoGqkymHRLG+XkNNBtb7MRItsjlMVNELXECwSiMa3nJL2/YyHW
-          nTr1+11/weeZEKgVbCUrOugFkMXnfZIBSn40j6EnRlO2u/NFU5ksK5ak2+j8raZ7
-          xW7VXp9S1Tgf1IsWHjGZZZguwCkkh1tHOlHC9gVA3p63WecjrIzcrR/V27atul4m
-          tn56s5NwFvYPUIx1dbC8IajLUrepVm6XOwdQCfd02DmOyjWJAgMBAAGjYzBhMA4G
-          A1UdDwEB/wQEAwIBBjAPBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBRJEM+kuDUu
-          ZTmCnA4wUrgnFaXc4zAfBgNVHSMEGDAWgBRJEM+kuDUuZTmCnA4wUrgnFaXc4zAN
-          BgkqhkiG9w0BAQsFAAOCAQEAcfA7uirXsNZyI2j4AJFVtOTKOZlQwqbyNducnmlg
-          /5nug9fAkwM4AgvF5bBOD1Hw6khdsccMwIj+1S7wpL+EYb/nSc8G0qe1p/9lZ/mZ
-          ff5g4JOa26lLuCrZDqAk4TzYnt6sQKfa5ZXVUUn0BK3okhiXS0i+NloMyaBCL7vk
-          kDwkHwEqflRKfZ9/oFTcCfoiHPA7AdBtaPVr0/Kj9L7k+ouz122huqG5KqX0Zpo8
-          S0IGvcd2FZjNSNPttNAK7YuBVsZ0m2nIH1SLp//00v7yAHIgytQwwB17PBcp4NXD
-          pCfTa27ng9mMMC2YLqWQpW4TkqjDin2ZC+5X/mbrjzTvVg==
-          -----END CERTIFICATE-----
-        - |+
-          # Amazon RDS us-gov-west-1 CA expires May22
-          -----BEGIN CERTIFICATE-----
-          MIIECjCCAvKgAwIBAgICEAAwDQYJKoZIhvcNAQELBQAwgZMxCzAJBgNVBAYTAlVT
-          MRAwDgYDVQQHDAdTZWF0dGxlMRMwEQYDVQQIDApXYXNoaW5ndG9uMSIwIAYDVQQK
-          DBlBbWF6b24gV2ViIFNlcnZpY2VzLCBJbmMuMRMwEQYDVQQLDApBbWF6b24gUkRT
-          MSQwIgYDVQQDDBtBbWF6b24gUkRTIEdvdkNsb3VkIFJvb3QgQ0EwHhcNMTcwNTE5
-          MjIzMTE5WhcNMjIwNTE4MTIwMDAwWjCBkzELMAkGA1UEBhMCVVMxEzARBgNVBAgM
-          Cldhc2hpbmd0b24xEDAOBgNVBAcMB1NlYXR0bGUxIjAgBgNVBAoMGUFtYXpvbiBX
-          ZWIgU2VydmljZXMsIEluYy4xEzARBgNVBAsMCkFtYXpvbiBSRFMxJDAiBgNVBAMM
-          G0FtYXpvbiBSRFMgdXMtZ292LXdlc3QtMSBDQTCCASIwDQYJKoZIhvcNAQEBBQAD
-          ggEPADCCAQoCggEBAM8YZLKAzzOdNnoi7Klih26Zkj+OCpDfwx4ZYB6f8L8UoQi5
-          8z9ZtIwMjiJ/kO08P1yl4gfc7YZcNFvhGruQZNat3YNpxwUpQcr4mszjuffbL4uz
-          +/8FBxALdqCVOJ5Q0EVSfz3d9Bd1pUPL7ARtSpy7bn/tUPyQeI+lODYO906C0TQ3
-          b9bjOsgAdBKkHfjLdsknsOZYYIzYWOJyFJJa0B11XjDUNBy/3IuC0KvDl6At0V5b
-          8M6cWcKhte2hgjwTYepV+/GTadeube1z5z6mWsN5arOAQUtYDLH6Aztq9mCJzLHm
-          RccBugnGl3fRLJ2VjioN8PoGoN9l9hFBy5fnFgsCAwEAAaNmMGQwDgYDVR0PAQH/
-          BAQDAgEGMBIGA1UdEwEB/wQIMAYBAf8CAQAwHQYDVR0OBBYEFEG7+br8KkvwPd5g
-          71Rvh2stclJbMB8GA1UdIwQYMBaAFEkQz6S4NS5lOYKcDjBSuCcVpdzjMA0GCSqG
-          SIb3DQEBCwUAA4IBAQBMA327u5ABmhX+aPxljoIbxnydmAFWxW6wNp5+rZrvPig8
-          zDRqGQWWr7wWOIjfcWugSElYtf/m9KZHG/Z6+NG7nAoUrdcd1h/IQhb+lFQ2b5g9
-          sVzQv/H2JNkfZA8fL/Ko/Tm/f9tcqe0zrGCtT+5u0Nvz35Wl8CEUKLloS5xEb3k5
-          7D9IhG3fsE3vHWlWrGCk1cKry3j12wdPG5cUsug0vt34u6rdhP+FsM0tHI15Kjch
-          RuUCvyQecy2ZFNAa3jmd5ycNdL63RWe8oayRBpQBxPPCbHfILxGZEdJbCH9aJ2D/
-          l8oHIDnvOLdv7/cBjyYuvmprgPtu3QEkbre5Hln/
-          -----END CERTIFICATE-----
-        - |+
-          # Amazon RDS us-gov-west-1 Root CA RSA2048 G1 expires April2162
-          -----BEGIN CERTIFICATE-----
-          MIIEBzCCAu+gAwIBAgIRAMSbo6rMlQ+TZDCb7zg40qUwDQYJKoZIhvcNAQEMBQAw
-          gZsxCzAJBgNVBAYTAlVTMSIwIAYDVQQKDBlBbWF6b24gV2ViIFNlcnZpY2VzLCBJ
-          bmMuMRMwEQYDVQQLDApBbWF6b24gUkRTMQswCQYDVQQIDAJXQTE0MDIGA1UEAwwr
-          QW1hem9uIFJEUyB1cy1nb3Ytd2VzdC0xIFJvb3QgQ0EgUlNBMjA0OCBHMTEQMA4G
-          A1UEBwwHU2VhdHRsZTAgFw0yMjA0MTUyMjM1MjFaGA8yMDYyMDQxNTIzMzUyMVow
-          gZsxCzAJBgNVBAYTAlVTMSIwIAYDVQQKDBlBbWF6b24gV2ViIFNlcnZpY2VzLCBJ
-          bmMuMRMwEQYDVQQLDApBbWF6b24gUkRTMQswCQYDVQQIDAJXQTE0MDIGA1UEAwwr
-          QW1hem9uIFJEUyB1cy1nb3Ytd2VzdC0xIFJvb3QgQ0EgUlNBMjA0OCBHMTEQMA4G
-          A1UEBwwHU2VhdHRsZTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAM3U
-          XJp6XLyNdOmyuj19ZKNmbJTGoRbsnrdxYLxbhQRCykOga7Hh/D5qKPMR/B80OsoK
-          uWpxWmQCaCP4Z9Aa9N68L0TRJXZoArZjV8q5nfjsYWQqOPx+cKtIxqvyotov5WE2
-          RKaujqpKBAyI49542NNmOEROUshunxYh/7s3Z8oPxOX8kp6hLBtckqUzFbAb7/vM
-          X0YpgNUpJ2G1Q9MLKfxEmw2p0WE1FEW35gMvUN4jFtTaKjsXtqGu6iF4YqEASwrv
-          vPmLhBHuyKC9ZfEvYzFjw2+l5SMENvhAde10WUpBuJnK+ZoKgFxLOUcdyZO9fR1Y
-          wVG5twjPnOhHUOLpAP0CAwEAAaNCMEAwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4E
-          FgQUsjcnO96t1VCa/JBZSqY1asXWaZ4wDgYDVR0PAQH/BAQDAgGGMA0GCSqGSIb3
-          DQEBDAUAA4IBAQCYx0FHyvrX1CeuKd4CEi50QUZzY1HjGoySz+by6rY1+jZ1v2cp
-          JIBrhQ8VUiJ8EqCDKzzv1mBOA1lx+5jpWB2yKP2hq3YJ93BNK+KO7BgasCkUYLGk
-          v3c2jo4J5qbWsNsqa/dog+qQbLAcqCx4MeZIadpdLv++ejGPjA0+zjXWwWmQ4RKe
-          ILiR1wO52uKF90tiDTNi3C5oMaEYbW+Kbsfsx5NpybEU7DkrVKb4MTVgtFuAELrF
-          8Zmdbpv8xnUA+oo/QdLLX+eJP/+8tdeDdB6rYFKpJmC2B3EnaKS4X4UpxZJFAgig
-          oB6q5jNJ5onkWIfx8luNdbagKSFZXHhSO8KP
-          -----END CERTIFICATE-----
-        - |+
-          # Amazon RDS us-gov-west-1 Root CA RSA4096 G1 expires May2121
-          -----BEGIN CERTIFICATE-----
-          MIIGBzCCA++gAwIBAgIRAOzQCoOR21YG2noWOfFcuNIwDQYJKoZIhvcNAQEMBQAw
-          gZsxCzAJBgNVBAYTAlVTMSIwIAYDVQQKDBlBbWF6b24gV2ViIFNlcnZpY2VzLCBJ
-          bmMuMRMwEQYDVQQLDApBbWF6b24gUkRTMQswCQYDVQQIDAJXQTE0MDIGA1UEAwwr
-          QW1hem9uIFJEUyB1cy1nb3Ytd2VzdC0xIFJvb3QgQ0EgUlNBNDA5NiBHMTEQMA4G
-          A1UEBwwHU2VhdHRsZTAgFw0yMTA1MjYyMTQ0MzlaGA8yMTIxMDUyNjIyNDQzOVow
-          gZsxCzAJBgNVBAYTAlVTMSIwIAYDVQQKDBlBbWF6b24gV2ViIFNlcnZpY2VzLCBJ
-          bmMuMRMwEQYDVQQLDApBbWF6b24gUkRTMQswCQYDVQQIDAJXQTE0MDIGA1UEAwwr
-          QW1hem9uIFJEUyB1cy1nb3Ytd2VzdC0xIFJvb3QgQ0EgUlNBNDA5NiBHMTEQMA4G
-          A1UEBwwHU2VhdHRsZTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBANwY
-          M2iZdnnlMutI9nfn2fWBICAQHWmMmpPmtSka/ziBFyaCxkHDF8RLmooW+GLe+FEF
-          9CQKSVqRa7X5AFiqRFF1KvgxWvazawyScuw88JW6Eqhaw0Rlm2p1Iow3TE8FSCDo
-          Is1vEV3Brbf26CMiXbqI+aCuTOy0fjRzjl5igViTgZxt2ZXOwyKkF+2T8LQp4b4F
-          Mh85Ctw1An1DhAemsc3SmcYnPKyFUP90DxGuTjFtfNR01GbBtVYwVvOBgIJe59Zs
-          OWcEFOO2mU53Ik6oKcLYu4+PmE5aDvQewb6bkQZchClb7Eg0BPYekWwTPsKUTS3H
-          bgdwVxgzjdAdU9fvaaoQmS9xdHWlonKq8CubJdLUduV3WVmDAg7MQgiT3p8JF9W2
-          KbQpUbYxqd7j9OIe3IS3rVPwYA8PVh1hUJ+OBLw61sbGRAuN3H+B1DlJh1smg6bR
-          g9W+oLRzfjZa32EzFmaQIxtgRfiyjxB/vqAHdl5zPou30X1CyRYquS870O02bvTN
-          zzWSOfRY4KPmS1YFVsN+m+R4+hSUOAE//bJ25ACP9oDO5w9NWkAux4e0UUAuWCra
-          jRROYN2J0KCogdru5G7lOQerD12zi3C2iibty6ou4tQX+MIKMMUVq8cfUH7oKv/R
-          8mL5PV/NUsgO248llo0lr9QBwQKdiw17wCxFR+8vAgMBAAGjQjBAMA8GA1UdEwEB
-          /wQFMAMBAf8wHQYDVR0OBBYEFPDYnx2xYIPDDAEjb6UcF29I6DgKMA4GA1UdDwEB
-          /wQEAwIBhjANBgkqhkiG9w0BAQwFAAOCAgEANTrAGs/GpXCADAwMGlrjXTdohp+p
-          CIp3gbnryVYZBXvO+f8hjJ8bHk0D/DiBrkjE8o0IpNaAadOZa+WvTNMsanPmGf1A
-          kD0vA9nm4gwEhBbzj9HRYX+dIhZhVWny9Kugm80s0h0hvbwTakUPOdMqkz6wn+xx
-          Owh7AIwaC5TTCsQyKlv5rjVblvU1XFgBf3Pf3wvMAfjDoAEPTXER/9mLVbXe+EmW
-          osP1JmgyDd+0WQFVK/LEDW81L5hsV5JvthAAFhGVtRw9ko5Ep28+EQUJE1wmLTdL
-          PyjB/KfJrTMDq94WolzFv4JpUStHbclkKlXtigjKeiYZ5Yvo+vLMSkXemccSfYn7
-          vdaUFD5vqWXvM4xhiYRq/tigw2E1bjmyd9L3XD7XalufZtMGWn7zT8HMPP+/Lch1
-          JjZ9LL2Y99VIqhoHcuSa95FtLpYDRQ28K03uwqxqFnOQLyPVmYwsaHKnmmwaZDjF
-          K1XxLVRLGRWvKEuSoWrsGcs3ehoxX4Knz/BaJzr/ioU1VnItj53tmOSJO0eMA6k+
-          egaVEb0FTa2F5xeLCKjgfDDWMz3v0TdL+kt+9z0THMlPWfOzd1C35ZzSIcTcRj22
-          SAzsL0t5ZTI4XvoPFF8dga78/KsBRolqdPjs0UzdlKhwh1ADOkTRgLOaaidMEgsT
-          JS/rbzD4FPbvc/g=
-          -----END CERTIFICATE-----
-        - |+
-          # Amazon RDS us-gov-west-1 Root CA ECC384 G1 expires May2121
-          -----BEGIN CERTIFICATE-----
-          MIICtDCCAjugAwIBAgIQPyg+edjKVnM2PB4KZVu66jAKBggqhkjOPQQDAzCBmjEL
-          MAkGA1UEBhMCVVMxIjAgBgNVBAoMGUFtYXpvbiBXZWIgU2VydmljZXMsIEluYy4x
-          EzARBgNVBAsMCkFtYXpvbiBSRFMxCzAJBgNVBAgMAldBMTMwMQYDVQQDDCpBbWF6
-          b24gUkRTIHVzLWdvdi13ZXN0LTEgUm9vdCBDQSBFQ0MzODQgRzExEDAOBgNVBAcM
-          B1NlYXR0bGUwIBcNMjEwNTI2MjE1MzI3WhgPMjEyMTA1MjYyMjUzMjdaMIGaMQsw
-          CQYDVQQGEwJVUzEiMCAGA1UECgwZQW1hem9uIFdlYiBTZXJ2aWNlcywgSW5jLjET
-          MBEGA1UECwwKQW1hem9uIFJEUzELMAkGA1UECAwCV0ExMzAxBgNVBAMMKkFtYXpv
-          biBSRFMgdXMtZ292LXdlc3QtMSBSb290IENBIEVDQzM4NCBHMTEQMA4GA1UEBwwH
-          U2VhdHRsZTB2MBAGByqGSM49AgEGBSuBBAAiA2IABFaqyIYrbpPfhiKzLEkmzp1j
-          3OYO/e1VE3vCf5c62bN5xYKFKH/MnKgsUFNsFpJ1t0p9cexi+607aiYOo1sOWvOj
-          q3PUu+ltklQdvunU/Se5++qqsh7lylL5OF/F19uqfqNCMEAwDwYDVR0TAQH/BAUw
-          AwEB/zAdBgNVHQ4EFgQUJHPtPhijPquZxTz2UGh4YV1npYMwDgYDVR0PAQH/BAQD
-          AgGGMAoGCCqGSM49BAMDA2cAMGQCMHWDFuIZ9LZgysbL4vx/Ox9z8fbegb3352bM
-          BFr6JV1x8VLbePblHd0V1MwDdRWeAwIwarWfOVdB1ijrwzjROzCwE0uBkHYUPr0Z
-          vgwdtlsnwDw9TnjsBrTJkQ0aS8c0Ahl1
-          -----END CERTIFICATE-----
-        - |+
-          # rds-ca-2015-root.pem
-          -----BEGIN CERTIFICATE-----
-          MIID9DCCAtygAwIBAgIBQjANBgkqhkiG9w0BAQUFADCBijELMAkGA1UEBhMCVVMx
-          EzARBgNVBAgMCldhc2hpbmd0b24xEDAOBgNVBAcMB1NlYXR0bGUxIjAgBgNVBAoM
-          GUFtYXpvbiBXZWIgU2VydmljZXMsIEluYy4xEzARBgNVBAsMCkFtYXpvbiBSRFMx
-          GzAZBgNVBAMMEkFtYXpvbiBSRFMgUm9vdCBDQTAeFw0xNTAyMDUwOTExMzFaFw0y
-          MDAzMDUwOTExMzFaMIGKMQswCQYDVQQGEwJVUzETMBEGA1UECAwKV2FzaGluZ3Rv
-          bjEQMA4GA1UEBwwHU2VhdHRsZTEiMCAGA1UECgwZQW1hem9uIFdlYiBTZXJ2aWNl
-          cywgSW5jLjETMBEGA1UECwwKQW1hem9uIFJEUzEbMBkGA1UEAwwSQW1hem9uIFJE
-          UyBSb290IENBMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuD8nrZ8V
-          u+VA8yVlUipCZIKPTDcOILYpUe8Tct0YeQQr0uyl018StdBsa3CjBgvwpDRq1HgF
-          Ji2N3+39+shCNspQeE6aYU+BHXhKhIIStt3r7gl/4NqYiDDMWKHxHq0nsGDFfArf
-          AOcjZdJagOMqb3fF46flc8k2E7THTm9Sz4L7RY1WdABMuurpICLFE3oHcGdapOb9
-          T53pQR+xpHW9atkcf3pf7gbO0rlKVSIoUenBlZipUlp1VZl/OD/E+TtRhDDNdI2J
-          P/DSMM3aEsq6ZQkfbz/Ilml+Lx3tJYXUDmp+ZjzMPLk/+3beT8EhrwtcG3VPpvwp
-          BIOqsqVVTvw/CwIDAQABo2MwYTAOBgNVHQ8BAf8EBAMCAQYwDwYDVR0TAQH/BAUw
-          AwEB/zAdBgNVHQ4EFgQUTgLurD72FchM7Sz1BcGPnIQISYMwHwYDVR0jBBgwFoAU
-          TgLurD72FchM7Sz1BcGPnIQISYMwDQYJKoZIhvcNAQEFBQADggEBAHZcgIio8pAm
-          MjHD5cl6wKjXxScXKtXygWH2BoDMYBJF9yfyKO2jEFxYKbHePpnXB1R04zJSWAw5
-          2EUuDI1pSBh9BA82/5PkuNlNeSTB3dXDD2PEPdzVWbSKvUB8ZdooV+2vngL0Zm4r
-          47QPyd18yPHrRIbtBtHR/6CwKevLZ394zgExqhnekYKIqqEX41xsUV0Gm6x4vpjf
-          2u6O/+YE2U+qyyxHE5Wd5oqde0oo9UUpFETJPVb6Q2cEeQib8PBAyi0i6KnF+kIV
-          A9dY7IHSubtCK/i8wxMVqfd5GtbA8mmpeJFwnDvm9rBEsHybl08qlax9syEwsUYr
-          /40NawZfTUU=
-          -----END CERTIFICATE-----
-        - |+
-          # rds-ca-2012-us-gov-west-1.pem
-          -----BEGIN CERTIFICATE-----
-          MIIDQzCCAqygAwIBAgIJAMGs6m/j+u8sMA0GCSqGSIb3DQEBBQUAMHUxCzAJBgNV
-          BAYTAlVTMRMwEQYDVQQIEwpXYXNoaW5ndG9uMRAwDgYDVQQHEwdTZWF0dGxlMRMw
-          EQYDVQQKEwpBbWF6b24uY29tMQwwCgYDVQQLEwNSRFMxHDAaBgNVBAMTE2F3cy5h
-          bWF6b24uY29tL3Jkcy8wHhcNMTIwODE2MDY0MjAwWhcNMTcwODE1MDY0MjAwWjB1
-          MQswCQYDVQQGEwJVUzETMBEGA1UECBMKV2FzaGluZ3RvbjEQMA4GA1UEBxMHU2Vh
-          dHRsZTETMBEGA1UEChMKQW1hem9uLmNvbTEMMAoGA1UECxMDUkRTMRwwGgYDVQQD
-          ExNhd3MuYW1hem9uLmNvbS9yZHMvMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKB
-          gQCnTB7AkRR4xuhfAuOt5foNeCRBPeUujkzmJu1yfnTbtFi+g7zmovQ9BJcRoPYL
-          45McnXyaT/7UjhJhCI5gnYlTIyBTRFh7lXFJryypFx8AIh6q3D/ht8b6cVro3sJ2
-          k4x1w/c7akKKsZJtf0ZyhbMvNnBz3K3TWVB6c9DChbfyUQIDAQABo4HaMIHXMB0G
-          A1UdDgQWBBS/OwyfNJHDnAmnZBbq9ACiXz7O1jCBpwYDVR0jBIGfMIGcgBS/Owyf
-          NJHDnAmnZBbq9ACiXz7O1qF5pHcwdTELMAkGA1UEBhMCVVMxEzARBgNVBAgTCldh
-          c2hpbmd0b24xEDAOBgNVBAcTB1NlYXR0bGUxEzARBgNVBAoTCkFtYXpvbi5jb20x
-          DDAKBgNVBAsTA1JEUzEcMBoGA1UEAxMTYXdzLmFtYXpvbi5jb20vcmRzL4IJAMGs
-          6m/j+u8sMAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQEFBQADgYEACR37LqHlzjSH
-          9gHCaiVJgCb0CCxSg3PHaQuv8h4ugAqQpGxpX3Zo97VgHnjEve21gXA74kzGUUAo
-          7YNTZWbF2VkHUDqekXimvL3q1JEvHDKPkLJrxEic1zTU1uazb9uJeb1aVWTq6N8R
-          bx56xd/e3o7RYcPfLD45y7RRXKz3AmE=
-          -----END CERTIFICATE-----
-        cors:
-          default:
-            allowed:
-              headers:
-              - Accept
-              - Authorization
-              - Accept-Language
-              - Content-Type
-              - Content-Language
-              - If-Match
-              - X-Requested-With
-              - X-Identity-Zone-Id
-              - X-Identity-Zone-Subdomain
-              origin:
-              - ^cloud.gov$
-              - ^.*\.cloud.gov$
-              - ^localhost$
-              - ^.*\.localhost$
-              methods:
-              - GET
-              - PUT
-              - POST
-              - DELETE
-              - OPTIONS
-              credentials: true
-            max_age: 10
-          xhr:
-            allowed:
-              headers:
-              - Accept
-              - Authorization
-              - Accept-Language
-              - Content-Type
-              - Content-Language
-              - If-Match
-              - X-Requested-With
-              - X-Identity-Zone-Id
-              - X-Identity-Zone-Subdomain
-              origin:
-              - ^cloud.gov$
-              - ^.*\.cloud.gov$
-              - ^localhost$
-              - ^.*\.localhost$
-              methods:
-              - GET
-              - POST
-              - OPTIONS
-              credentials: true
-            max_age: 10
-        url: https://opsuaa.fr.cloud.gov
-        issuer: https://opslogin.fr.cloud.gov
-        sslPrivateKey: ((uaa_ssl.private_key))
-        sslCertificate: ((uaa_ssl.certificate))
-        servlet:
-          session-cookie:
-            secure: true
-            http-only: true
-            max-age: 900
-        jwt:
-          signing_key: ((uaa_jwt_signing_key.private_key))
-          verification_key: ((uaa_jwt_signing_key.public_key))
-        scim:
-          groups:
-            concourse.admin: 'Group that allows access to Concourse "main" team'
-            concourse.pages: 'Members of the Concourse "pages" team'
-            concourse.viewer: 'Support members holding viewers role'
-          users:
-          - name: credhub_admin_user_staging
-            password: ((/toolingbosh/credhub-staging/credhub-admin-user-password))
-            groups:
-              - credhub.read
-              - credhub.write
-        clients:
-          admin:
-            override: true
-            authorized-grant-types: client_credentials
-            scope: ""
-            authorities: clients.read,clients.write,clients.secret,uaa.admin,scim.read,scim.write,password.write
-            secret: ((uaa_admin_client_secret))
+    vm_type: m6i.xlarge.opsuaa
+    stemcell: default
+    networks:
+      - name: opsuaa
+        static_ips: ((terraform_outputs.bosh_uaa_static_ips))
+    instances: 2
+    azs: [z1]
+    vm_extensions:
+      - opsuaa-lb
+    jobs:
+      - name: bosh-dns-aliases
+        release: bosh-dns-aliases
+        properties:
+          aliases:
+            - domain: opsuaa.internal
+              targets:
+                - deployment: opsuaa
+                  domain: bosh
+                  instance_group: opsuaa
+                  network: opsuaa
+                  query: "*"
+      - name: uaa
+        release: uaa
+        properties:
+          encryption:
+            encryption_keys:
+              - label: uaa-encryption-key-1
+                passphrase: ((uaa_encryption_key_1))
+            active_key_label: uaa-encryption-key-1
+          uaa:
+            ca_certs:
+              - |
+                # UAA requires each cert as an array object
+                # RDS US-GOV-WEST-1-BUNDLE.PEM UPDATED APRIL 2022
+                # Amazon RDS GovCloud Root CA expires May22
+                -----BEGIN CERTIFICATE-----
+                MIIEDjCCAvagAwIBAgIJAMM61RQn3/kdMA0GCSqGSIb3DQEBCwUAMIGTMQswCQYD
+                VQQGEwJVUzEQMA4GA1UEBwwHU2VhdHRsZTETMBEGA1UECAwKV2FzaGluZ3RvbjEi
+                MCAGA1UECgwZQW1hem9uIFdlYiBTZXJ2aWNlcywgSW5jLjETMBEGA1UECwwKQW1h
+                em9uIFJEUzEkMCIGA1UEAwwbQW1hem9uIFJEUyBHb3ZDbG91ZCBSb290IENBMB4X
+                DTE3MDUxOTIyMjkxMVoXDTIyMDUxODIyMjkxMVowgZMxCzAJBgNVBAYTAlVTMRAw
+                DgYDVQQHDAdTZWF0dGxlMRMwEQYDVQQIDApXYXNoaW5ndG9uMSIwIAYDVQQKDBlB
+                bWF6b24gV2ViIFNlcnZpY2VzLCBJbmMuMRMwEQYDVQQLDApBbWF6b24gUkRTMSQw
+                IgYDVQQDDBtBbWF6b24gUkRTIEdvdkNsb3VkIFJvb3QgQ0EwggEiMA0GCSqGSIb3
+                DQEBAQUAA4IBDwAwggEKAoIBAQDGS9bh1FGiJPT+GRb3C5aKypJVDC1H2gbh6n3u
+                j8cUiyMXfmm+ak402zdLpSYMaxiQ7oL/B3wEmumIpRDAsQrSp3B/qEeY7ipQGOfh
+                q2TXjXGIUjiJ/FaoGqkymHRLG+XkNNBtb7MRItsjlMVNELXECwSiMa3nJL2/YyHW
+                nTr1+11/weeZEKgVbCUrOugFkMXnfZIBSn40j6EnRlO2u/NFU5ksK5ak2+j8raZ7
+                xW7VXp9S1Tgf1IsWHjGZZZguwCkkh1tHOlHC9gVA3p63WecjrIzcrR/V27atul4m
+                tn56s5NwFvYPUIx1dbC8IajLUrepVm6XOwdQCfd02DmOyjWJAgMBAAGjYzBhMA4G
+                A1UdDwEB/wQEAwIBBjAPBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBRJEM+kuDUu
+                ZTmCnA4wUrgnFaXc4zAfBgNVHSMEGDAWgBRJEM+kuDUuZTmCnA4wUrgnFaXc4zAN
+                BgkqhkiG9w0BAQsFAAOCAQEAcfA7uirXsNZyI2j4AJFVtOTKOZlQwqbyNducnmlg
+                /5nug9fAkwM4AgvF5bBOD1Hw6khdsccMwIj+1S7wpL+EYb/nSc8G0qe1p/9lZ/mZ
+                ff5g4JOa26lLuCrZDqAk4TzYnt6sQKfa5ZXVUUn0BK3okhiXS0i+NloMyaBCL7vk
+                kDwkHwEqflRKfZ9/oFTcCfoiHPA7AdBtaPVr0/Kj9L7k+ouz122huqG5KqX0Zpo8
+                S0IGvcd2FZjNSNPttNAK7YuBVsZ0m2nIH1SLp//00v7yAHIgytQwwB17PBcp4NXD
+                pCfTa27ng9mMMC2YLqWQpW4TkqjDin2ZC+5X/mbrjzTvVg==
+                -----END CERTIFICATE-----
+              - |+
+                # Amazon RDS us-gov-west-1 CA expires May22
+                -----BEGIN CERTIFICATE-----
+                MIIECjCCAvKgAwIBAgICEAAwDQYJKoZIhvcNAQELBQAwgZMxCzAJBgNVBAYTAlVT
+                MRAwDgYDVQQHDAdTZWF0dGxlMRMwEQYDVQQIDApXYXNoaW5ndG9uMSIwIAYDVQQK
+                DBlBbWF6b24gV2ViIFNlcnZpY2VzLCBJbmMuMRMwEQYDVQQLDApBbWF6b24gUkRT
+                MSQwIgYDVQQDDBtBbWF6b24gUkRTIEdvdkNsb3VkIFJvb3QgQ0EwHhcNMTcwNTE5
+                MjIzMTE5WhcNMjIwNTE4MTIwMDAwWjCBkzELMAkGA1UEBhMCVVMxEzARBgNVBAgM
+                Cldhc2hpbmd0b24xEDAOBgNVBAcMB1NlYXR0bGUxIjAgBgNVBAoMGUFtYXpvbiBX
+                ZWIgU2VydmljZXMsIEluYy4xEzARBgNVBAsMCkFtYXpvbiBSRFMxJDAiBgNVBAMM
+                G0FtYXpvbiBSRFMgdXMtZ292LXdlc3QtMSBDQTCCASIwDQYJKoZIhvcNAQEBBQAD
+                ggEPADCCAQoCggEBAM8YZLKAzzOdNnoi7Klih26Zkj+OCpDfwx4ZYB6f8L8UoQi5
+                8z9ZtIwMjiJ/kO08P1yl4gfc7YZcNFvhGruQZNat3YNpxwUpQcr4mszjuffbL4uz
+                +/8FBxALdqCVOJ5Q0EVSfz3d9Bd1pUPL7ARtSpy7bn/tUPyQeI+lODYO906C0TQ3
+                b9bjOsgAdBKkHfjLdsknsOZYYIzYWOJyFJJa0B11XjDUNBy/3IuC0KvDl6At0V5b
+                8M6cWcKhte2hgjwTYepV+/GTadeube1z5z6mWsN5arOAQUtYDLH6Aztq9mCJzLHm
+                RccBugnGl3fRLJ2VjioN8PoGoN9l9hFBy5fnFgsCAwEAAaNmMGQwDgYDVR0PAQH/
+                BAQDAgEGMBIGA1UdEwEB/wQIMAYBAf8CAQAwHQYDVR0OBBYEFEG7+br8KkvwPd5g
+                71Rvh2stclJbMB8GA1UdIwQYMBaAFEkQz6S4NS5lOYKcDjBSuCcVpdzjMA0GCSqG
+                SIb3DQEBCwUAA4IBAQBMA327u5ABmhX+aPxljoIbxnydmAFWxW6wNp5+rZrvPig8
+                zDRqGQWWr7wWOIjfcWugSElYtf/m9KZHG/Z6+NG7nAoUrdcd1h/IQhb+lFQ2b5g9
+                sVzQv/H2JNkfZA8fL/Ko/Tm/f9tcqe0zrGCtT+5u0Nvz35Wl8CEUKLloS5xEb3k5
+                7D9IhG3fsE3vHWlWrGCk1cKry3j12wdPG5cUsug0vt34u6rdhP+FsM0tHI15Kjch
+                RuUCvyQecy2ZFNAa3jmd5ycNdL63RWe8oayRBpQBxPPCbHfILxGZEdJbCH9aJ2D/
+                l8oHIDnvOLdv7/cBjyYuvmprgPtu3QEkbre5Hln/
+                -----END CERTIFICATE-----
+              - |+
+                # Amazon RDS us-gov-west-1 Root CA RSA2048 G1 expires April2162
+                -----BEGIN CERTIFICATE-----
+                MIIEBzCCAu+gAwIBAgIRAMSbo6rMlQ+TZDCb7zg40qUwDQYJKoZIhvcNAQEMBQAw
+                gZsxCzAJBgNVBAYTAlVTMSIwIAYDVQQKDBlBbWF6b24gV2ViIFNlcnZpY2VzLCBJ
+                bmMuMRMwEQYDVQQLDApBbWF6b24gUkRTMQswCQYDVQQIDAJXQTE0MDIGA1UEAwwr
+                QW1hem9uIFJEUyB1cy1nb3Ytd2VzdC0xIFJvb3QgQ0EgUlNBMjA0OCBHMTEQMA4G
+                A1UEBwwHU2VhdHRsZTAgFw0yMjA0MTUyMjM1MjFaGA8yMDYyMDQxNTIzMzUyMVow
+                gZsxCzAJBgNVBAYTAlVTMSIwIAYDVQQKDBlBbWF6b24gV2ViIFNlcnZpY2VzLCBJ
+                bmMuMRMwEQYDVQQLDApBbWF6b24gUkRTMQswCQYDVQQIDAJXQTE0MDIGA1UEAwwr
+                QW1hem9uIFJEUyB1cy1nb3Ytd2VzdC0xIFJvb3QgQ0EgUlNBMjA0OCBHMTEQMA4G
+                A1UEBwwHU2VhdHRsZTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAM3U
+                XJp6XLyNdOmyuj19ZKNmbJTGoRbsnrdxYLxbhQRCykOga7Hh/D5qKPMR/B80OsoK
+                uWpxWmQCaCP4Z9Aa9N68L0TRJXZoArZjV8q5nfjsYWQqOPx+cKtIxqvyotov5WE2
+                RKaujqpKBAyI49542NNmOEROUshunxYh/7s3Z8oPxOX8kp6hLBtckqUzFbAb7/vM
+                X0YpgNUpJ2G1Q9MLKfxEmw2p0WE1FEW35gMvUN4jFtTaKjsXtqGu6iF4YqEASwrv
+                vPmLhBHuyKC9ZfEvYzFjw2+l5SMENvhAde10WUpBuJnK+ZoKgFxLOUcdyZO9fR1Y
+                wVG5twjPnOhHUOLpAP0CAwEAAaNCMEAwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4E
+                FgQUsjcnO96t1VCa/JBZSqY1asXWaZ4wDgYDVR0PAQH/BAQDAgGGMA0GCSqGSIb3
+                DQEBDAUAA4IBAQCYx0FHyvrX1CeuKd4CEi50QUZzY1HjGoySz+by6rY1+jZ1v2cp
+                JIBrhQ8VUiJ8EqCDKzzv1mBOA1lx+5jpWB2yKP2hq3YJ93BNK+KO7BgasCkUYLGk
+                v3c2jo4J5qbWsNsqa/dog+qQbLAcqCx4MeZIadpdLv++ejGPjA0+zjXWwWmQ4RKe
+                ILiR1wO52uKF90tiDTNi3C5oMaEYbW+Kbsfsx5NpybEU7DkrVKb4MTVgtFuAELrF
+                8Zmdbpv8xnUA+oo/QdLLX+eJP/+8tdeDdB6rYFKpJmC2B3EnaKS4X4UpxZJFAgig
+                oB6q5jNJ5onkWIfx8luNdbagKSFZXHhSO8KP
+                -----END CERTIFICATE-----
+              - |+
+                # Amazon RDS us-gov-west-1 Root CA RSA4096 G1 expires May2121
+                -----BEGIN CERTIFICATE-----
+                MIIGBzCCA++gAwIBAgIRAOzQCoOR21YG2noWOfFcuNIwDQYJKoZIhvcNAQEMBQAw
+                gZsxCzAJBgNVBAYTAlVTMSIwIAYDVQQKDBlBbWF6b24gV2ViIFNlcnZpY2VzLCBJ
+                bmMuMRMwEQYDVQQLDApBbWF6b24gUkRTMQswCQYDVQQIDAJXQTE0MDIGA1UEAwwr
+                QW1hem9uIFJEUyB1cy1nb3Ytd2VzdC0xIFJvb3QgQ0EgUlNBNDA5NiBHMTEQMA4G
+                A1UEBwwHU2VhdHRsZTAgFw0yMTA1MjYyMTQ0MzlaGA8yMTIxMDUyNjIyNDQzOVow
+                gZsxCzAJBgNVBAYTAlVTMSIwIAYDVQQKDBlBbWF6b24gV2ViIFNlcnZpY2VzLCBJ
+                bmMuMRMwEQYDVQQLDApBbWF6b24gUkRTMQswCQYDVQQIDAJXQTE0MDIGA1UEAwwr
+                QW1hem9uIFJEUyB1cy1nb3Ytd2VzdC0xIFJvb3QgQ0EgUlNBNDA5NiBHMTEQMA4G
+                A1UEBwwHU2VhdHRsZTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBANwY
+                M2iZdnnlMutI9nfn2fWBICAQHWmMmpPmtSka/ziBFyaCxkHDF8RLmooW+GLe+FEF
+                9CQKSVqRa7X5AFiqRFF1KvgxWvazawyScuw88JW6Eqhaw0Rlm2p1Iow3TE8FSCDo
+                Is1vEV3Brbf26CMiXbqI+aCuTOy0fjRzjl5igViTgZxt2ZXOwyKkF+2T8LQp4b4F
+                Mh85Ctw1An1DhAemsc3SmcYnPKyFUP90DxGuTjFtfNR01GbBtVYwVvOBgIJe59Zs
+                OWcEFOO2mU53Ik6oKcLYu4+PmE5aDvQewb6bkQZchClb7Eg0BPYekWwTPsKUTS3H
+                bgdwVxgzjdAdU9fvaaoQmS9xdHWlonKq8CubJdLUduV3WVmDAg7MQgiT3p8JF9W2
+                KbQpUbYxqd7j9OIe3IS3rVPwYA8PVh1hUJ+OBLw61sbGRAuN3H+B1DlJh1smg6bR
+                g9W+oLRzfjZa32EzFmaQIxtgRfiyjxB/vqAHdl5zPou30X1CyRYquS870O02bvTN
+                zzWSOfRY4KPmS1YFVsN+m+R4+hSUOAE//bJ25ACP9oDO5w9NWkAux4e0UUAuWCra
+                jRROYN2J0KCogdru5G7lOQerD12zi3C2iibty6ou4tQX+MIKMMUVq8cfUH7oKv/R
+                8mL5PV/NUsgO248llo0lr9QBwQKdiw17wCxFR+8vAgMBAAGjQjBAMA8GA1UdEwEB
+                /wQFMAMBAf8wHQYDVR0OBBYEFPDYnx2xYIPDDAEjb6UcF29I6DgKMA4GA1UdDwEB
+                /wQEAwIBhjANBgkqhkiG9w0BAQwFAAOCAgEANTrAGs/GpXCADAwMGlrjXTdohp+p
+                CIp3gbnryVYZBXvO+f8hjJ8bHk0D/DiBrkjE8o0IpNaAadOZa+WvTNMsanPmGf1A
+                kD0vA9nm4gwEhBbzj9HRYX+dIhZhVWny9Kugm80s0h0hvbwTakUPOdMqkz6wn+xx
+                Owh7AIwaC5TTCsQyKlv5rjVblvU1XFgBf3Pf3wvMAfjDoAEPTXER/9mLVbXe+EmW
+                osP1JmgyDd+0WQFVK/LEDW81L5hsV5JvthAAFhGVtRw9ko5Ep28+EQUJE1wmLTdL
+                PyjB/KfJrTMDq94WolzFv4JpUStHbclkKlXtigjKeiYZ5Yvo+vLMSkXemccSfYn7
+                vdaUFD5vqWXvM4xhiYRq/tigw2E1bjmyd9L3XD7XalufZtMGWn7zT8HMPP+/Lch1
+                JjZ9LL2Y99VIqhoHcuSa95FtLpYDRQ28K03uwqxqFnOQLyPVmYwsaHKnmmwaZDjF
+                K1XxLVRLGRWvKEuSoWrsGcs3ehoxX4Knz/BaJzr/ioU1VnItj53tmOSJO0eMA6k+
+                egaVEb0FTa2F5xeLCKjgfDDWMz3v0TdL+kt+9z0THMlPWfOzd1C35ZzSIcTcRj22
+                SAzsL0t5ZTI4XvoPFF8dga78/KsBRolqdPjs0UzdlKhwh1ADOkTRgLOaaidMEgsT
+                JS/rbzD4FPbvc/g=
+                -----END CERTIFICATE-----
+              - |+
+                # Amazon RDS us-gov-west-1 Root CA ECC384 G1 expires May2121
+                -----BEGIN CERTIFICATE-----
+                MIICtDCCAjugAwIBAgIQPyg+edjKVnM2PB4KZVu66jAKBggqhkjOPQQDAzCBmjEL
+                MAkGA1UEBhMCVVMxIjAgBgNVBAoMGUFtYXpvbiBXZWIgU2VydmljZXMsIEluYy4x
+                EzARBgNVBAsMCkFtYXpvbiBSRFMxCzAJBgNVBAgMAldBMTMwMQYDVQQDDCpBbWF6
+                b24gUkRTIHVzLWdvdi13ZXN0LTEgUm9vdCBDQSBFQ0MzODQgRzExEDAOBgNVBAcM
+                B1NlYXR0bGUwIBcNMjEwNTI2MjE1MzI3WhgPMjEyMTA1MjYyMjUzMjdaMIGaMQsw
+                CQYDVQQGEwJVUzEiMCAGA1UECgwZQW1hem9uIFdlYiBTZXJ2aWNlcywgSW5jLjET
+                MBEGA1UECwwKQW1hem9uIFJEUzELMAkGA1UECAwCV0ExMzAxBgNVBAMMKkFtYXpv
+                biBSRFMgdXMtZ292LXdlc3QtMSBSb290IENBIEVDQzM4NCBHMTEQMA4GA1UEBwwH
+                U2VhdHRsZTB2MBAGByqGSM49AgEGBSuBBAAiA2IABFaqyIYrbpPfhiKzLEkmzp1j
+                3OYO/e1VE3vCf5c62bN5xYKFKH/MnKgsUFNsFpJ1t0p9cexi+607aiYOo1sOWvOj
+                q3PUu+ltklQdvunU/Se5++qqsh7lylL5OF/F19uqfqNCMEAwDwYDVR0TAQH/BAUw
+                AwEB/zAdBgNVHQ4EFgQUJHPtPhijPquZxTz2UGh4YV1npYMwDgYDVR0PAQH/BAQD
+                AgGGMAoGCCqGSM49BAMDA2cAMGQCMHWDFuIZ9LZgysbL4vx/Ox9z8fbegb3352bM
+                BFr6JV1x8VLbePblHd0V1MwDdRWeAwIwarWfOVdB1ijrwzjROzCwE0uBkHYUPr0Z
+                vgwdtlsnwDw9TnjsBrTJkQ0aS8c0Ahl1
+                -----END CERTIFICATE-----
+              - |+
+                # rds-ca-2015-root.pem
+                -----BEGIN CERTIFICATE-----
+                MIID9DCCAtygAwIBAgIBQjANBgkqhkiG9w0BAQUFADCBijELMAkGA1UEBhMCVVMx
+                EzARBgNVBAgMCldhc2hpbmd0b24xEDAOBgNVBAcMB1NlYXR0bGUxIjAgBgNVBAoM
+                GUFtYXpvbiBXZWIgU2VydmljZXMsIEluYy4xEzARBgNVBAsMCkFtYXpvbiBSRFMx
+                GzAZBgNVBAMMEkFtYXpvbiBSRFMgUm9vdCBDQTAeFw0xNTAyMDUwOTExMzFaFw0y
+                MDAzMDUwOTExMzFaMIGKMQswCQYDVQQGEwJVUzETMBEGA1UECAwKV2FzaGluZ3Rv
+                bjEQMA4GA1UEBwwHU2VhdHRsZTEiMCAGA1UECgwZQW1hem9uIFdlYiBTZXJ2aWNl
+                cywgSW5jLjETMBEGA1UECwwKQW1hem9uIFJEUzEbMBkGA1UEAwwSQW1hem9uIFJE
+                UyBSb290IENBMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuD8nrZ8V
+                u+VA8yVlUipCZIKPTDcOILYpUe8Tct0YeQQr0uyl018StdBsa3CjBgvwpDRq1HgF
+                Ji2N3+39+shCNspQeE6aYU+BHXhKhIIStt3r7gl/4NqYiDDMWKHxHq0nsGDFfArf
+                AOcjZdJagOMqb3fF46flc8k2E7THTm9Sz4L7RY1WdABMuurpICLFE3oHcGdapOb9
+                T53pQR+xpHW9atkcf3pf7gbO0rlKVSIoUenBlZipUlp1VZl/OD/E+TtRhDDNdI2J
+                P/DSMM3aEsq6ZQkfbz/Ilml+Lx3tJYXUDmp+ZjzMPLk/+3beT8EhrwtcG3VPpvwp
+                BIOqsqVVTvw/CwIDAQABo2MwYTAOBgNVHQ8BAf8EBAMCAQYwDwYDVR0TAQH/BAUw
+                AwEB/zAdBgNVHQ4EFgQUTgLurD72FchM7Sz1BcGPnIQISYMwHwYDVR0jBBgwFoAU
+                TgLurD72FchM7Sz1BcGPnIQISYMwDQYJKoZIhvcNAQEFBQADggEBAHZcgIio8pAm
+                MjHD5cl6wKjXxScXKtXygWH2BoDMYBJF9yfyKO2jEFxYKbHePpnXB1R04zJSWAw5
+                2EUuDI1pSBh9BA82/5PkuNlNeSTB3dXDD2PEPdzVWbSKvUB8ZdooV+2vngL0Zm4r
+                47QPyd18yPHrRIbtBtHR/6CwKevLZ394zgExqhnekYKIqqEX41xsUV0Gm6x4vpjf
+                2u6O/+YE2U+qyyxHE5Wd5oqde0oo9UUpFETJPVb6Q2cEeQib8PBAyi0i6KnF+kIV
+                A9dY7IHSubtCK/i8wxMVqfd5GtbA8mmpeJFwnDvm9rBEsHybl08qlax9syEwsUYr
+                /40NawZfTUU=
+                -----END CERTIFICATE-----
+              - |+
+                # rds-ca-2012-us-gov-west-1.pem
+                -----BEGIN CERTIFICATE-----
+                MIIDQzCCAqygAwIBAgIJAMGs6m/j+u8sMA0GCSqGSIb3DQEBBQUAMHUxCzAJBgNV
+                BAYTAlVTMRMwEQYDVQQIEwpXYXNoaW5ndG9uMRAwDgYDVQQHEwdTZWF0dGxlMRMw
+                EQYDVQQKEwpBbWF6b24uY29tMQwwCgYDVQQLEwNSRFMxHDAaBgNVBAMTE2F3cy5h
+                bWF6b24uY29tL3Jkcy8wHhcNMTIwODE2MDY0MjAwWhcNMTcwODE1MDY0MjAwWjB1
+                MQswCQYDVQQGEwJVUzETMBEGA1UECBMKV2FzaGluZ3RvbjEQMA4GA1UEBxMHU2Vh
+                dHRsZTETMBEGA1UEChMKQW1hem9uLmNvbTEMMAoGA1UECxMDUkRTMRwwGgYDVQQD
+                ExNhd3MuYW1hem9uLmNvbS9yZHMvMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKB
+                gQCnTB7AkRR4xuhfAuOt5foNeCRBPeUujkzmJu1yfnTbtFi+g7zmovQ9BJcRoPYL
+                45McnXyaT/7UjhJhCI5gnYlTIyBTRFh7lXFJryypFx8AIh6q3D/ht8b6cVro3sJ2
+                k4x1w/c7akKKsZJtf0ZyhbMvNnBz3K3TWVB6c9DChbfyUQIDAQABo4HaMIHXMB0G
+                A1UdDgQWBBS/OwyfNJHDnAmnZBbq9ACiXz7O1jCBpwYDVR0jBIGfMIGcgBS/Owyf
+                NJHDnAmnZBbq9ACiXz7O1qF5pHcwdTELMAkGA1UEBhMCVVMxEzARBgNVBAgTCldh
+                c2hpbmd0b24xEDAOBgNVBAcTB1NlYXR0bGUxEzARBgNVBAoTCkFtYXpvbi5jb20x
+                DDAKBgNVBAsTA1JEUzEcMBoGA1UEAxMTYXdzLmFtYXpvbi5jb20vcmRzL4IJAMGs
+                6m/j+u8sMAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQEFBQADgYEACR37LqHlzjSH
+                9gHCaiVJgCb0CCxSg3PHaQuv8h4ugAqQpGxpX3Zo97VgHnjEve21gXA74kzGUUAo
+                7YNTZWbF2VkHUDqekXimvL3q1JEvHDKPkLJrxEic1zTU1uazb9uJeb1aVWTq6N8R
+                bx56xd/e3o7RYcPfLD45y7RRXKz3AmE=
+                -----END CERTIFICATE-----
+            cors:
+              default:
+                allowed:
+                  headers:
+                    - Accept
+                    - Authorization
+                    - Accept-Language
+                    - Content-Type
+                    - Content-Language
+                    - If-Match
+                    - X-Requested-With
+                    - X-Identity-Zone-Id
+                    - X-Identity-Zone-Subdomain
+                  origin:
+                    - ^cloud.gov$
+                    - ^.*\.cloud.gov$
+                    - ^localhost$
+                    - ^.*\.localhost$
+                  methods:
+                    - GET
+                    - PUT
+                    - POST
+                    - DELETE
+                    - OPTIONS
+                  credentials: true
+                max_age: 10
+              xhr:
+                allowed:
+                  headers:
+                    - Accept
+                    - Authorization
+                    - Accept-Language
+                    - Content-Type
+                    - Content-Language
+                    - If-Match
+                    - X-Requested-With
+                    - X-Identity-Zone-Id
+                    - X-Identity-Zone-Subdomain
+                  origin:
+                    - ^cloud.gov$
+                    - ^.*\.cloud.gov$
+                    - ^localhost$
+                    - ^.*\.localhost$
+                  methods:
+                    - GET
+                    - POST
+                    - OPTIONS
+                  credentials: true
+                max_age: 10
+            url: https://opsuaa.fr.cloud.gov
+            issuer: https://opslogin.fr.cloud.gov
+            sslPrivateKey: ((uaa_ssl.private_key))
+            sslCertificate: ((uaa_ssl.certificate))
+            servlet:
+              session-cookie:
+                secure: true
+                http-only: true
+                max-age: 900
+            jwt:
+              signing_key: ((uaa_jwt_signing_key.private_key))
+              verification_key: ((uaa_jwt_signing_key.public_key))
+            scim:
+              groups:
+                concourse.admin: 'Group that allows access to Concourse "main" team'
+                concourse.pages: 'Members of the Concourse "pages" team'
+                concourse.viewer: "Support members holding viewers role"
+              users:
+                - name: credhub_admin_user_staging
+                  password: ((/toolingbosh/credhub-staging/credhub-admin-user-password))
+                  groups:
+                    - credhub.read
+                    - credhub.write
+            clients:
+              admin:
+                override: true
+                authorized-grant-types: client_credentials
+                scope: ""
+                authorities: clients.read,clients.write,clients.secret,uaa.admin,scim.read,scim.write,password.write
+                secret: ((uaa_admin_client_secret))
 
-          # BOSH auth
-          # TODO: Remove after tooling bosh refactor to bosh-deployment
-          ci:
-            secret: ((bosh_ci_client_secret))
-            authorized-grant-types: client_credentials
-            authorities: bosh.admin
-            scope: ""
+              # BOSH auth
+              # TODO: Remove after tooling bosh refactor to bosh-deployment
+              ci:
+                secret: ((bosh_ci_client_secret))
+                authorized-grant-types: client_credentials
+                authorities: bosh.admin
+                scope: ""
 
-          # Concourse auth
-          concourse_staging:
-            <<: *client-template
-            scope: openid,concourse.admin,concourse.pages,concourse.viewer,credhub.read,credhub.write
-            authorities: uaa.none,concourse.admin,concourse.pages,concourse.viewer,credhub.read,credhub.write
-            redirect-uri: https://ci.fr-stage.cloud.gov/sky/issuer/callback
-            name: "Staging Concourse"
-            show-on-homepage: true
-            app-launch-url: https://ci.fr-stage.cloud.gov
-            app-icon: 'iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAAAXNSR0IArs4c6QAAA5tJREFUeF7tmwFO5DAMRcvJYE+2cDLYk+2uxUSqRrS1Hdu/SX4lNAg5cftf7N82w8vGA6rACzQ7k28EAF4EBEAAYAXA6VkBBABWAJyeFUAAYAXA6VkBBABWAJweUQHvj2tun2AJsOkrALxt2yY/r4/PdsVf27Z9/P+bfC57ZAFoq/u3QtlfK0OIBCCr/FMh+E8hUglLtqS7ABAoS0KIBCAiyirWtJ2jQhE/kJa0zBENIArCMuacAUAgiBeIJ/QcS5hzFoAeQ95Dm94XsgBEtKIGYmoImQAiIUxrztkAovxA5pkSQgWAKD9oLWkqc64AENmKpvOFKgCEcHBDXgkg0g+mqYRqANF+MLw5VwPIaEUNwpCvLxAAsiDIvMPdIaEAZPjBkL6ABJDhB1UQnl80urdVkQAyW1G0OR/tazfg7v1tNIAKCB5zboLL+Vk2mMwvDu8AINMPLK8vLF8kONvnML2zuguATD848oUm+PPXZXo2kcwe5AEgJy6U3cZzcIW9+8ka4do59+7WaXKptNUEnX2xKnoDvQKCRryIGJUfHAGw9MPoh5+I/eQIAXvncAPwrEJVMuUVVfiB8lS6wlSaHFXAX0dqVULlvJ5FoJy6LEylx1kLstz/mt1fIcPoEFSt+cyEPVUQ8QSaeXuo4B4WornBOf1H7Z4VaHk0v3rMD1OkcCJV+5HzuaLUA0Hm/6kMvY/5hfp1pQp/Eva2or0vtN89vtKlRvFgk/iaCpCY3ioo1gCWTt129md41YJabG8VwFRJTiyit0XqSqUFwCr4lldazJ/Id2FaAKu2onDBn8vEAkDGrtCKutuKpRdZAczYiprgGa/YL1lYAcxQBelt5VL1XYAHwIhVUNpWsgGMYMi3FbzXhPfj72TIt2orFRWAroImeNdDkEWorFiPB6CqYJi2YoHVCyDTkIdtK5UAIlvREoJHmnBEK5qyrVRXgKUKoE+dFmGqYns94KoKlmwrFniRAJohL99WUAAseRn7UCCyAiiqQwECcIgWOYQAItV0zEUADtEihxBApJqOuQjAIVrkEAKIVNMxFwE4RIscQgCRajrmIgCHaJFDCCBSTcdcHgB32ox3XHL6EJOmpuDHqRPAOUOTpqZgAlBVj0lTUzABEIBKAXCQaVGbglkBKrQmTU3BBEAAKgXAQaZFbQoGX9iU6QkAjJUACACsADg9K4AAwAqA07MCCACsADg9K4AAwAqA07MCCACsADj9Pxrno2EC1PynAAAAAElFTkSuQmCC'
-            secret: ((concourse_client_secret_staging))
-          concourse_production:
-            <<: *client-template
-            scope: openid,concourse.admin,concourse.pages,concourse.viewer
-            authorities: uaa.none,concourse.admin,concourse.pages,concourse.viewer
-            name: "Production Concourse"
-            show-on-homepage: true
-            app-launch-url: https://ci.fr.cloud.gov
-            app-icon: 'iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAAAXNSR0IArs4c6QAAA5tJREFUeF7tmwFO5DAMRcvJYE+2cDLYk+2uxUSqRrS1Hdu/SX4lNAg5cftf7N82w8vGA6rACzQ7k28EAF4EBEAAYAXA6VkBBABWAJyeFUAAYAXA6VkBBABWAJweUQHvj2tun2AJsOkrALxt2yY/r4/PdsVf27Z9/P+bfC57ZAFoq/u3QtlfK0OIBCCr/FMh+E8hUglLtqS7ABAoS0KIBCAiyirWtJ2jQhE/kJa0zBENIArCMuacAUAgiBeIJ/QcS5hzFoAeQ95Dm94XsgBEtKIGYmoImQAiIUxrztkAovxA5pkSQgWAKD9oLWkqc64AENmKpvOFKgCEcHBDXgkg0g+mqYRqANF+MLw5VwPIaEUNwpCvLxAAsiDIvMPdIaEAZPjBkL6ABJDhB1UQnl80urdVkQAyW1G0OR/tazfg7v1tNIAKCB5zboLL+Vk2mMwvDu8AINMPLK8vLF8kONvnML2zuguATD848oUm+PPXZXo2kcwe5AEgJy6U3cZzcIW9+8ka4do59+7WaXKptNUEnX2xKnoDvQKCRryIGJUfHAGw9MPoh5+I/eQIAXvncAPwrEJVMuUVVfiB8lS6wlSaHFXAX0dqVULlvJ5FoJy6LEylx1kLstz/mt1fIcPoEFSt+cyEPVUQ8QSaeXuo4B4WornBOf1H7Z4VaHk0v3rMD1OkcCJV+5HzuaLUA0Hm/6kMvY/5hfp1pQp/Eva2or0vtN89vtKlRvFgk/iaCpCY3ioo1gCWTt129md41YJabG8VwFRJTiyit0XqSqUFwCr4lldazJ/Id2FaAKu2onDBn8vEAkDGrtCKutuKpRdZAczYiprgGa/YL1lYAcxQBelt5VL1XYAHwIhVUNpWsgGMYMi3FbzXhPfj72TIt2orFRWAroImeNdDkEWorFiPB6CqYJi2YoHVCyDTkIdtK5UAIlvREoJHmnBEK5qyrVRXgKUKoE+dFmGqYns94KoKlmwrFniRAJohL99WUAAseRn7UCCyAiiqQwECcIgWOYQAItV0zEUADtEihxBApJqOuQjAIVrkEAKIVNMxFwE4RIscQgCRajrmIgCHaJFDCCBSTcdcHgB32ox3XHL6EJOmpuDHqRPAOUOTpqZgAlBVj0lTUzABEIBKAXCQaVGbglkBKrQmTU3BBEAAKgXAQaZFbQoGX9iU6QkAjJUACACsADg9K4AAwAqA07MCCACsADg9K4AAwAqA07MCCACsADj9Pxrno2EC1PynAAAAAElFTkSuQmCC'
-            redirect-uri: https://ci.fr.cloud.gov/sky/issuer/callback
-            secret: ((concourse_client_secret_production))
+              # Concourse auth
+              concourse_staging:
+                <<: *client-template
+                scope: openid,concourse.admin,concourse.pages,concourse.viewer,credhub.read,credhub.write
+                authorities: uaa.none,concourse.admin,concourse.pages,concourse.viewer,credhub.read,credhub.write
+                redirect-uri: https://ci.fr-stage.cloud.gov/sky/issuer/callback
+                name: "Staging Concourse"
+                show-on-homepage: true
+                app-launch-url: https://ci.fr-stage.cloud.gov
+                app-icon: "iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAAAXNSR0IArs4c6QAAA5tJREFUeF7tmwFO5DAMRcvJYE+2cDLYk+2uxUSqRrS1Hdu/SX4lNAg5cftf7N82w8vGA6rACzQ7k28EAF4EBEAAYAXA6VkBBABWAJyeFUAAYAXA6VkBBABWAJweUQHvj2tun2AJsOkrALxt2yY/r4/PdsVf27Z9/P+bfC57ZAFoq/u3QtlfK0OIBCCr/FMh+E8hUglLtqS7ABAoS0KIBCAiyirWtJ2jQhE/kJa0zBENIArCMuacAUAgiBeIJ/QcS5hzFoAeQ95Dm94XsgBEtKIGYmoImQAiIUxrztkAovxA5pkSQgWAKD9oLWkqc64AENmKpvOFKgCEcHBDXgkg0g+mqYRqANF+MLw5VwPIaEUNwpCvLxAAsiDIvMPdIaEAZPjBkL6ABJDhB1UQnl80urdVkQAyW1G0OR/tazfg7v1tNIAKCB5zboLL+Vk2mMwvDu8AINMPLK8vLF8kONvnML2zuguATD848oUm+PPXZXo2kcwe5AEgJy6U3cZzcIW9+8ka4do59+7WaXKptNUEnX2xKnoDvQKCRryIGJUfHAGw9MPoh5+I/eQIAXvncAPwrEJVMuUVVfiB8lS6wlSaHFXAX0dqVULlvJ5FoJy6LEylx1kLstz/mt1fIcPoEFSt+cyEPVUQ8QSaeXuo4B4WornBOf1H7Z4VaHk0v3rMD1OkcCJV+5HzuaLUA0Hm/6kMvY/5hfp1pQp/Eva2or0vtN89vtKlRvFgk/iaCpCY3ioo1gCWTt129md41YJabG8VwFRJTiyit0XqSqUFwCr4lldazJ/Id2FaAKu2onDBn8vEAkDGrtCKutuKpRdZAczYiprgGa/YL1lYAcxQBelt5VL1XYAHwIhVUNpWsgGMYMi3FbzXhPfj72TIt2orFRWAroImeNdDkEWorFiPB6CqYJi2YoHVCyDTkIdtK5UAIlvREoJHmnBEK5qyrVRXgKUKoE+dFmGqYns94KoKlmwrFniRAJohL99WUAAseRn7UCCyAiiqQwECcIgWOYQAItV0zEUADtEihxBApJqOuQjAIVrkEAKIVNMxFwE4RIscQgCRajrmIgCHaJFDCCBSTcdcHgB32ox3XHL6EJOmpuDHqRPAOUOTpqZgAlBVj0lTUzABEIBKAXCQaVGbglkBKrQmTU3BBEAAKgXAQaZFbQoGX9iU6QkAjJUACACsADg9K4AAwAqA07MCCACsADg9K4AAwAqA07MCCACsADj9Pxrno2EC1PynAAAAAElFTkSuQmCC"
+                secret: ((concourse_client_secret_staging))
+              concourse_production:
+                <<: *client-template
+                scope: openid,concourse.admin,concourse.pages,concourse.viewer
+                authorities: uaa.none,concourse.admin,concourse.pages,concourse.viewer
+                name: "Production Concourse"
+                show-on-homepage: true
+                app-launch-url: https://ci.fr.cloud.gov
+                app-icon: "iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAAAXNSR0IArs4c6QAAA5tJREFUeF7tmwFO5DAMRcvJYE+2cDLYk+2uxUSqRrS1Hdu/SX4lNAg5cftf7N82w8vGA6rACzQ7k28EAF4EBEAAYAXA6VkBBABWAJyeFUAAYAXA6VkBBABWAJweUQHvj2tun2AJsOkrALxt2yY/r4/PdsVf27Z9/P+bfC57ZAFoq/u3QtlfK0OIBCCr/FMh+E8hUglLtqS7ABAoS0KIBCAiyirWtJ2jQhE/kJa0zBENIArCMuacAUAgiBeIJ/QcS5hzFoAeQ95Dm94XsgBEtKIGYmoImQAiIUxrztkAovxA5pkSQgWAKD9oLWkqc64AENmKpvOFKgCEcHBDXgkg0g+mqYRqANF+MLw5VwPIaEUNwpCvLxAAsiDIvMPdIaEAZPjBkL6ABJDhB1UQnl80urdVkQAyW1G0OR/tazfg7v1tNIAKCB5zboLL+Vk2mMwvDu8AINMPLK8vLF8kONvnML2zuguATD848oUm+PPXZXo2kcwe5AEgJy6U3cZzcIW9+8ka4do59+7WaXKptNUEnX2xKnoDvQKCRryIGJUfHAGw9MPoh5+I/eQIAXvncAPwrEJVMuUVVfiB8lS6wlSaHFXAX0dqVULlvJ5FoJy6LEylx1kLstz/mt1fIcPoEFSt+cyEPVUQ8QSaeXuo4B4WornBOf1H7Z4VaHk0v3rMD1OkcCJV+5HzuaLUA0Hm/6kMvY/5hfp1pQp/Eva2or0vtN89vtKlRvFgk/iaCpCY3ioo1gCWTt129md41YJabG8VwFRJTiyit0XqSqUFwCr4lldazJ/Id2FaAKu2onDBn8vEAkDGrtCKutuKpRdZAczYiprgGa/YL1lYAcxQBelt5VL1XYAHwIhVUNpWsgGMYMi3FbzXhPfj72TIt2orFRWAroImeNdDkEWorFiPB6CqYJi2YoHVCyDTkIdtK5UAIlvREoJHmnBEK5qyrVRXgKUKoE+dFmGqYns94KoKlmwrFniRAJohL99WUAAseRn7UCCyAiiqQwECcIgWOYQAItV0zEUADtEihxBApJqOuQjAIVrkEAKIVNMxFwE4RIscQgCRajrmIgCHaJFDCCBSTcdcHgB32ox3XHL6EJOmpuDHqRPAOUOTpqZgAlBVj0lTUzABEIBKAXCQaVGbglkBKrQmTU3BBEAAKgXAQaZFbQoGX9iU6QkAjJUACACsADg9K4AAwAqA07MCCACsADg9K4AAwAqA07MCCACsADj9Pxrno2EC1PynAAAAAElFTkSuQmCC"
+                redirect-uri: https://ci.fr.cloud.gov/sky/issuer/callback
+                secret: ((concourse_client_secret_production))
 
-          # Credhub
-          credhub_cli:
-            override: true
-            authorized-grant-types: password,refresh_token
-            scope: credhub.read,credhub.write
-            authorities: uaa.resource
-            access-token-validity: 30
-            refresh-token-validity: 3600
-            secret: ""
-          credhub_admin_client_staging:
-            override: true
-            authorized-grant-types: client_credentials
-            scope: uaa.none
-            authorities: credhub.read,credhub.write
-            access-token-validity: 3600
-            secret: ((/toolingbosh/credhub-staging/credhub-admin-client-password))
-          credhub_admin_client_production:
-            override: true
-            authorized-grant-types: client_credentials
-            scope: uaa.none
-            authorities: credhub.read,credhub.write
-            access-token-validity: 3600
-            secret: ((/toolingbosh/credhub-production/credhub-admin-client-password))
-          credhub_pages_client_staging:
-            override: true
-            authorized-grant-types: client_credentials
-            scope: uaa.none,concourse.pages
-            authorities: uaa.none,concourse.pages,credhub.read,credhub.write
-            access-token-validity: 3600
-            secret: ((/toolingbosh/credhub-staging/credhub-pages-client-password))
-          credhub_pages_client_production:
-            override: true
-            authorized-grant-types: client_credentials
-            scope: uaa.none,concourse.pages
-            authorities: uaa.none,concourse.pages,credhub.read,credhub.write
-            access-token-validity: 3600
-            secret: ((/toolingbosh/credhub-production/credhub-pages-client-password))
-          doomsday_readonly_staging:
-            override: true
-            authorized-grant-types: client_credentials,refresh_token
-            authorities: credhub.read, credhub.write
-            scope: uaa.none,credhub.read
-            secret: ((doomsday_readonly_secret_staging))
-          pgp_credhub_client:
-            override: true
-            authorized-grant-types: client_credentials,refresh_token
-            authorities: credhub.read, credhub.write
-            scope: uaa.none,credhub.read,credhub.write
-            secret: ((pgp_credhub_client_secret))
-          pages_user_agent_credhub_client:
-            override: true
-            authorized-grant-types: client_credentials,refresh_token
-            authorities: credhub.read, credhub.write
-            scope: uaa.none,credhub.read,credhub.write
-            secret: ((pages_user_agent_credhub_client_secret))
-          opensearch_proxy_ci_client:
-            override: true
-            authorized-grant-types: client_credentials,refresh_token
-            authorities: credhub.read, credhub.write
-            scope: uaa.none,credhub.read,credhub.write
-            secret: ((opensearch_proxy_ci_client_secret))
-          opensearch_ci_client:
-            override: true
-            authorized-grant-types: client_credentials,refresh_token
-            authorities: credhub.read, credhub.write
-            scope: uaa.none,credhub.read,credhub.write
-            secret: ((opensearch_ci_client_secret))
+              # Credhub
+              credhub_cli:
+                override: true
+                authorized-grant-types: password,refresh_token
+                scope: credhub.read,credhub.write
+                authorities: uaa.resource
+                access-token-validity: 30
+                refresh-token-validity: 3600
+                secret: ""
+              credhub_admin_client_staging:
+                override: true
+                authorized-grant-types: client_credentials
+                scope: uaa.none
+                authorities: credhub.read,credhub.write
+                access-token-validity: 3600
+                secret: ((/toolingbosh/credhub-staging/credhub-admin-client-password))
+              credhub_admin_client_production:
+                override: true
+                authorized-grant-types: client_credentials
+                scope: uaa.none
+                authorities: credhub.read,credhub.write
+                access-token-validity: 3600
+                secret: ((/toolingbosh/credhub-production/credhub-admin-client-password))
+              credhub_pages_client_staging:
+                override: true
+                authorized-grant-types: client_credentials
+                scope: uaa.none,concourse.pages
+                authorities: uaa.none,concourse.pages,credhub.read,credhub.write
+                access-token-validity: 3600
+                secret: ((/toolingbosh/credhub-staging/credhub-pages-client-password))
+              credhub_pages_client_production:
+                override: true
+                authorized-grant-types: client_credentials
+                scope: uaa.none,concourse.pages
+                authorities: uaa.none,concourse.pages,credhub.read,credhub.write
+                access-token-validity: 3600
+                secret: ((/toolingbosh/credhub-production/credhub-pages-client-password))
+              doomsday_readonly_staging:
+                override: true
+                authorized-grant-types: client_credentials,refresh_token
+                authorities: credhub.read, credhub.write
+                scope: uaa.none,credhub.read
+                secret: ((doomsday_readonly_secret_staging))
+              pgp_credhub_client:
+                override: true
+                authorized-grant-types: client_credentials,refresh_token
+                authorities: credhub.read, credhub.write
+                scope: uaa.none,credhub.read,credhub.write
+                secret: ((pgp_credhub_client_secret))
+              pages_user_agent_credhub_client:
+                override: true
+                authorized-grant-types: client_credentials,refresh_token
+                authorities: credhub.read, credhub.write
+                scope: uaa.none,credhub.read,credhub.write
+                secret: ((pages_user_agent_credhub_client_secret))
+              opensearch_proxy_ci_client:
+                override: true
+                authorized-grant-types: client_credentials,refresh_token
+                authorities: credhub.read, credhub.write
+                scope: uaa.none,credhub.read,credhub.write
+                secret: ((opensearch_proxy_ci_client_secret))
+              opensearch_ci_client:
+                override: true
+                authorized-grant-types: client_credentials,refresh_token
+                authorities: credhub.read, credhub.write
+                scope: uaa.none,credhub.read,credhub.write
+                secret: ((opensearch_ci_client_secret))
 
-          # Defect Dojo auth
-          defectdojo_development:
-            <<: *client-template
-            scope: openid,email,profile
-            redirect-uri: https://defectdojo.dev.us-gov-west-1.aws-us-gov.cloud.gov/oauth2/idpresponse,https://defectdojo.dev.us-gov-west-1.aws-us-gov.cloud.gov/complete/oidc
-            name: "Development Defect Dojo"
-            show-on-homepage: true
-            app-launch-url: https://defectdojo.dev.us-gov-west-1.aws-us-gov.cloud.gov
-            app-icon: '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'
-            secret: ((defectdojo_client_secret_development))
+              # Defect Dojo auth
+              defectdojo_development:
+                <<: *client-template
+                scope: openid,email,profile
+                redirect-uri: https://defectdojo.dev.us-gov-west-1.aws-us-gov.cloud.gov/oauth2/idpresponse,https://defectdojo.dev.us-gov-west-1.aws-us-gov.cloud.gov/complete/oidc
+                name: "Development Defect Dojo"
+                show-on-homepage: true
+                app-launch-url: https://defectdojo.dev.us-gov-west-1.aws-us-gov.cloud.gov
+                app-icon: "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"
+                secret: ((defectdojo_client_secret_development))
 
-          defectdojo_staging:
-            <<: *client-template
-            scope: openid,email,profile
-            redirect-uri: https://defectdojo.fr-stage.cloud.gov/oauth2/idpresponse,https://defectdojo.fr-stage.cloud.gov/complete/oidc
-            name: "Staging Defect Dojo"
-            show-on-homepage: true
-            app-launch-url: https://defectdojo.fr-stage.cloud.gov
-            app-icon: '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'
-            secret: ((defectdojo_client_secret_staging))
+              defectdojo_staging:
+                <<: *client-template
+                scope: openid,email,profile
+                redirect-uri: https://defectdojo.fr-stage.cloud.gov/oauth2/idpresponse,https://defectdojo.fr-stage.cloud.gov/complete/oidc
+                name: "Staging Defect Dojo"
+                show-on-homepage: true
+                app-launch-url: https://defectdojo.fr-stage.cloud.gov
+                app-icon: "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"
+                secret: ((defectdojo_client_secret_staging))
 
-          # Platform kibana auth
-          platform-kibana-development:
-            <<: *client-template
-            scope: openid,email,profile
-            redirect-uri: https://logs-platform.dev.us-gov-west-1.aws-us-gov.cloud.gov/oauth2/callback
-            name: "Development Logs Platform"
-            show-on-homepage: true
-            app-launch-url: https://logs-platform.dev.us-gov-west-1.aws-us-gov.cloud.gov/
-            app-icon: 'iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAAAXNSR0IArs4c6QAAA7JJREFUeF7tmwtu3DAMBZ2bNSdre7L2ZmkEVIFr2CYfPyLdfQsECGBJFGcsWeYmbxs/pQTeSqMz+EYBxTcBBVBAMYHi8FwBFFBMoDg8VwAFFBMoDs8VQAHFBIrDcwVQQDGB2PA/PocbP+oPV4AaldhwgP++bVh5hwJErqoGE/5oDDGFGqum8nqN9vApYLH/I3wKWCjgDD4FLBJwBZ8CFgi4g08ByQIk+BSQKEADnwKSBGjhU0CCAAT+723b3pE5dH8Rm3UVqL6CABDapsKHl0tgYpqh9sn//OywWkI6/M4CzpJfKWEJ/K4C7pJfIWEZ/I4CNMlnStDEn9sn/MA923c7PYSR5DMkIPFD4HdaAUjy80aKlIDED4PfRQCS/HEVR0hA4ofC7yAASf7q6OqRgMQPh18tAEleem+wSEDip8CvFIAkL8G3PBOQ+GnwqwSgyY95flNa0KwEND5U21HO86vZ6mOoNflfQRKs8bVcx/hQyWSlAG/yXgne+JKEOT7EFGoszeDmelTyVglR8a9S3I8PMYUaGwVEJ49KGNMef7Gm+VgeuMf8IKZQY00GhzbR8OfwiATttCPgwwebTAFZ8DMkRMFvIyAbfqSESPgtBKyCHyEhGn65gNXwPRIs8Ee8D+GhAm3rUGMhcBV8iwQr/LYCquEjEjzwWwroAl8jwQu/nYBu8O8kRMBvJaAr/DMJUfDbCOgOfy9h/B5ZUi4/BT0FvrYEgbYrFyBNYCZkWfaaerqmDQp1tteMLeUPHe2hxn9nKU1gNLPC1/yf7Yiv+eYLlaCt50v5Q0yhxkoBHviaV/kJIFICUs9vLcALHxEw2kZIQOv5bQVEwEcFeCWcHSikXaGlgCj4FgFWCVenuccJiIRvFYBKuDtKP0pANHyPAK0E6T3mMQIs8CNe5b17cHX/f47Hku2zs/RIwAqfAg5ELQLGXyR4aivVd2B1fPcKQN8wj+2rAVTHpwDhDpJ2Ba9ACqCAewLZd6D3Dvb25wr4n1fAinq69w6s7p+2AlbV06sBeuOnCFhZT/cCqO4fLmB1Pb0aoDd+qICKeroXQHX/MAFV9fRqgN74IQIq6+leANX93QKq6+nVAL3x3QK8E3j1/hTw9DfhV7+DvflzBXAFsBr6RUAq/V59J3yHUBrTu4Sf3p9bELcgbkGuLcj7pTz77whI+zVhJROggGTA0vAUIBFKvk4ByYCl4SlAIpR8nQKSAUvDU4BEKPk6BSQDloanAIlQ8nUKSAYsDU8BEqHk638A1z09cEe0n1IAAAAASUVORK5CYII='
-            secret: ((platform_kibana_client_secret_development))
-          platform-kibana-staging:
-            <<: *client-template
-            scope: openid,email,profile
-            redirect-uri: https://logs-platform.fr-stage.cloud.gov/oauth2/callback
-            name: "Staging Logs Platform"
-            show-on-homepage: true
-            app-launch-url: https://logs-platform.fr-stage.cloud.gov/
-            app-icon: 'iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAAAXNSR0IArs4c6QAAA7JJREFUeF7tmwtu3DAMBZ2bNSdre7L2ZmkEVIFr2CYfPyLdfQsECGBJFGcsWeYmbxs/pQTeSqMz+EYBxTcBBVBAMYHi8FwBFFBMoDg8VwAFFBMoDs8VQAHFBIrDcwVQQDGB2PA/PocbP+oPV4AaldhwgP++bVh5hwJErqoGE/5oDDGFGqum8nqN9vApYLH/I3wKWCjgDD4FLBJwBZ8CFgi4g08ByQIk+BSQKEADnwKSBGjhU0CCAAT+723b3pE5dH8Rm3UVqL6CABDapsKHl0tgYpqh9sn//OywWkI6/M4CzpJfKWEJ/K4C7pJfIWEZ/I4CNMlnStDEn9sn/MA923c7PYSR5DMkIPFD4HdaAUjy80aKlIDED4PfRQCS/HEVR0hA4ofC7yAASf7q6OqRgMQPh18tAEleem+wSEDip8CvFIAkL8G3PBOQ+GnwqwSgyY95flNa0KwEND5U21HO86vZ6mOoNflfQRKs8bVcx/hQyWSlAG/yXgne+JKEOT7EFGoszeDmelTyVglR8a9S3I8PMYUaGwVEJ49KGNMef7Gm+VgeuMf8IKZQY00GhzbR8OfwiATttCPgwwebTAFZ8DMkRMFvIyAbfqSESPgtBKyCHyEhGn65gNXwPRIs8Ee8D+GhAm3rUGMhcBV8iwQr/LYCquEjEjzwWwroAl8jwQu/nYBu8O8kRMBvJaAr/DMJUfDbCOgOfy9h/B5ZUi4/BT0FvrYEgbYrFyBNYCZkWfaaerqmDQp1tteMLeUPHe2hxn9nKU1gNLPC1/yf7Yiv+eYLlaCt50v5Q0yhxkoBHviaV/kJIFICUs9vLcALHxEw2kZIQOv5bQVEwEcFeCWcHSikXaGlgCj4FgFWCVenuccJiIRvFYBKuDtKP0pANHyPAK0E6T3mMQIs8CNe5b17cHX/f47Hku2zs/RIwAqfAg5ELQLGXyR4aivVd2B1fPcKQN8wj+2rAVTHpwDhDpJ2Ba9ACqCAewLZd6D3Dvb25wr4n1fAinq69w6s7p+2AlbV06sBeuOnCFhZT/cCqO4fLmB1Pb0aoDd+qICKeroXQHX/MAFV9fRqgN74IQIq6+leANX93QKq6+nVAL3x3QK8E3j1/hTw9DfhV7+DvflzBXAFsBr6RUAq/V59J3yHUBrTu4Sf3p9bELcgbkGuLcj7pTz77whI+zVhJROggGTA0vAUIBFKvk4ByYCl4SlAIpR8nQKSAUvDU4BEKPk6BSQDloanAIlQ8nUKSAYsDU8BEqHk638A1z09cEe0n1IAAAAASUVORK5CYII='
-            secret: ((platform_kibana_client_secret_staging))
-          platform-kibana-production:
-            <<: *client-template
-            scope: openid,email,profile
-            redirect-uri: https://logs-platform.fr.cloud.gov/oauth2/callback
-            name: "Production Logs Platform"
-            show-on-homepage: true
-            app-launch-url: https://logs-platform.fr.cloud.gov/
-            app-icon: 'iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAAAXNSR0IArs4c6QAAA7JJREFUeF7tmwtu3DAMBZ2bNSdre7L2ZmkEVIFr2CYfPyLdfQsECGBJFGcsWeYmbxs/pQTeSqMz+EYBxTcBBVBAMYHi8FwBFFBMoDg8VwAFFBMoDs8VQAHFBIrDcwVQQDGB2PA/PocbP+oPV4AaldhwgP++bVh5hwJErqoGE/5oDDGFGqum8nqN9vApYLH/I3wKWCjgDD4FLBJwBZ8CFgi4g08ByQIk+BSQKEADnwKSBGjhU0CCAAT+723b3pE5dH8Rm3UVqL6CABDapsKHl0tgYpqh9sn//OywWkI6/M4CzpJfKWEJ/K4C7pJfIWEZ/I4CNMlnStDEn9sn/MA923c7PYSR5DMkIPFD4HdaAUjy80aKlIDED4PfRQCS/HEVR0hA4ofC7yAASf7q6OqRgMQPh18tAEleem+wSEDip8CvFIAkL8G3PBOQ+GnwqwSgyY95flNa0KwEND5U21HO86vZ6mOoNflfQRKs8bVcx/hQyWSlAG/yXgne+JKEOT7EFGoszeDmelTyVglR8a9S3I8PMYUaGwVEJ49KGNMef7Gm+VgeuMf8IKZQY00GhzbR8OfwiATttCPgwwebTAFZ8DMkRMFvIyAbfqSESPgtBKyCHyEhGn65gNXwPRIs8Ee8D+GhAm3rUGMhcBV8iwQr/LYCquEjEjzwWwroAl8jwQu/nYBu8O8kRMBvJaAr/DMJUfDbCOgOfy9h/B5ZUi4/BT0FvrYEgbYrFyBNYCZkWfaaerqmDQp1tteMLeUPHe2hxn9nKU1gNLPC1/yf7Yiv+eYLlaCt50v5Q0yhxkoBHviaV/kJIFICUs9vLcALHxEw2kZIQOv5bQVEwEcFeCWcHSikXaGlgCj4FgFWCVenuccJiIRvFYBKuDtKP0pANHyPAK0E6T3mMQIs8CNe5b17cHX/f47Hku2zs/RIwAqfAg5ELQLGXyR4aivVd2B1fPcKQN8wj+2rAVTHpwDhDpJ2Ba9ACqCAewLZd6D3Dvb25wr4n1fAinq69w6s7p+2AlbV06sBeuOnCFhZT/cCqO4fLmB1Pb0aoDd+qICKeroXQHX/MAFV9fRqgN74IQIq6+leANX93QKq6+nVAL3x3QK8E3j1/hTw9DfhV7+DvflzBXAFsBr6RUAq/V59J3yHUBrTu4Sf3p9bELcgbkGuLcj7pTz77whI+zVhJROggGTA0vAUIBFKvk4ByYCl4SlAIpR8nQKSAUvDU4BEKPk6BSQDloanAIlQ8nUKSAYsDU8BEqHk638A1z09cEe0n1IAAAAASUVORK5CYII='
-            secret: ((platform_kibana_client_secret_production))
+              defectdojo_production:
+                <<: *client-template
+                scope: openid,email,profile
+                redirect-uri: https://defectdojo.fr.cloud.gov/oauth2/idpresponse,https://defectdojo.fr.cloud.gov/complete/oidc
+                name: "Production Defect Dojo"
+                show-on-homepage: true
+                app-launch-url: https://defectdojo.fr.cloud.gov
+                app-icon: "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"
+                secret: ((defectdojo_client_secret_production))
 
+              # Platform kibana auth
+              platform-kibana-development:
+                <<: *client-template
+                scope: openid,email,profile
+                redirect-uri: https://logs-platform.dev.us-gov-west-1.aws-us-gov.cloud.gov/oauth2/callback
+                name: "Development Logs Platform"
+                show-on-homepage: true
+                app-launch-url: https://logs-platform.dev.us-gov-west-1.aws-us-gov.cloud.gov/
+                app-icon: "iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAAAXNSR0IArs4c6QAAA7JJREFUeF7tmwtu3DAMBZ2bNSdre7L2ZmkEVIFr2CYfPyLdfQsECGBJFGcsWeYmbxs/pQTeSqMz+EYBxTcBBVBAMYHi8FwBFFBMoDg8VwAFFBMoDs8VQAHFBIrDcwVQQDGB2PA/PocbP+oPV4AaldhwgP++bVh5hwJErqoGE/5oDDGFGqum8nqN9vApYLH/I3wKWCjgDD4FLBJwBZ8CFgi4g08ByQIk+BSQKEADnwKSBGjhU0CCAAT+723b3pE5dH8Rm3UVqL6CABDapsKHl0tgYpqh9sn//OywWkI6/M4CzpJfKWEJ/K4C7pJfIWEZ/I4CNMlnStDEn9sn/MA923c7PYSR5DMkIPFD4HdaAUjy80aKlIDED4PfRQCS/HEVR0hA4ofC7yAASf7q6OqRgMQPh18tAEleem+wSEDip8CvFIAkL8G3PBOQ+GnwqwSgyY95flNa0KwEND5U21HO86vZ6mOoNflfQRKs8bVcx/hQyWSlAG/yXgne+JKEOT7EFGoszeDmelTyVglR8a9S3I8PMYUaGwVEJ49KGNMef7Gm+VgeuMf8IKZQY00GhzbR8OfwiATttCPgwwebTAFZ8DMkRMFvIyAbfqSESPgtBKyCHyEhGn65gNXwPRIs8Ee8D+GhAm3rUGMhcBV8iwQr/LYCquEjEjzwWwroAl8jwQu/nYBu8O8kRMBvJaAr/DMJUfDbCOgOfy9h/B5ZUi4/BT0FvrYEgbYrFyBNYCZkWfaaerqmDQp1tteMLeUPHe2hxn9nKU1gNLPC1/yf7Yiv+eYLlaCt50v5Q0yhxkoBHviaV/kJIFICUs9vLcALHxEw2kZIQOv5bQVEwEcFeCWcHSikXaGlgCj4FgFWCVenuccJiIRvFYBKuDtKP0pANHyPAK0E6T3mMQIs8CNe5b17cHX/f47Hku2zs/RIwAqfAg5ELQLGXyR4aivVd2B1fPcKQN8wj+2rAVTHpwDhDpJ2Ba9ACqCAewLZd6D3Dvb25wr4n1fAinq69w6s7p+2AlbV06sBeuOnCFhZT/cCqO4fLmB1Pb0aoDd+qICKeroXQHX/MAFV9fRqgN74IQIq6+leANX93QKq6+nVAL3x3QK8E3j1/hTw9DfhV7+DvflzBXAFsBr6RUAq/V59J3yHUBrTu4Sf3p9bELcgbkGuLcj7pTz77whI+zVhJROggGTA0vAUIBFKvk4ByYCl4SlAIpR8nQKSAUvDU4BEKPk6BSQDloanAIlQ8nUKSAYsDU8BEqHk638A1z09cEe0n1IAAAAASUVORK5CYII="
+                secret: ((platform_kibana_client_secret_development))
+              platform-kibana-staging:
+                <<: *client-template
+                scope: openid,email,profile
+                redirect-uri: https://logs-platform.fr-stage.cloud.gov/oauth2/callback
+                name: "Staging Logs Platform"
+                show-on-homepage: true
+                app-launch-url: https://logs-platform.fr-stage.cloud.gov/
+                app-icon: "iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAAAXNSR0IArs4c6QAAA7JJREFUeF7tmwtu3DAMBZ2bNSdre7L2ZmkEVIFr2CYfPyLdfQsECGBJFGcsWeYmbxs/pQTeSqMz+EYBxTcBBVBAMYHi8FwBFFBMoDg8VwAFFBMoDs8VQAHFBIrDcwVQQDGB2PA/PocbP+oPV4AaldhwgP++bVh5hwJErqoGE/5oDDGFGqum8nqN9vApYLH/I3wKWCjgDD4FLBJwBZ8CFgi4g08ByQIk+BSQKEADnwKSBGjhU0CCAAT+723b3pE5dH8Rm3UVqL6CABDapsKHl0tgYpqh9sn//OywWkI6/M4CzpJfKWEJ/K4C7pJfIWEZ/I4CNMlnStDEn9sn/MA923c7PYSR5DMkIPFD4HdaAUjy80aKlIDED4PfRQCS/HEVR0hA4ofC7yAASf7q6OqRgMQPh18tAEleem+wSEDip8CvFIAkL8G3PBOQ+GnwqwSgyY95flNa0KwEND5U21HO86vZ6mOoNflfQRKs8bVcx/hQyWSlAG/yXgne+JKEOT7EFGoszeDmelTyVglR8a9S3I8PMYUaGwVEJ49KGNMef7Gm+VgeuMf8IKZQY00GhzbR8OfwiATttCPgwwebTAFZ8DMkRMFvIyAbfqSESPgtBKyCHyEhGn65gNXwPRIs8Ee8D+GhAm3rUGMhcBV8iwQr/LYCquEjEjzwWwroAl8jwQu/nYBu8O8kRMBvJaAr/DMJUfDbCOgOfy9h/B5ZUi4/BT0FvrYEgbYrFyBNYCZkWfaaerqmDQp1tteMLeUPHe2hxn9nKU1gNLPC1/yf7Yiv+eYLlaCt50v5Q0yhxkoBHviaV/kJIFICUs9vLcALHxEw2kZIQOv5bQVEwEcFeCWcHSikXaGlgCj4FgFWCVenuccJiIRvFYBKuDtKP0pANHyPAK0E6T3mMQIs8CNe5b17cHX/f47Hku2zs/RIwAqfAg5ELQLGXyR4aivVd2B1fPcKQN8wj+2rAVTHpwDhDpJ2Ba9ACqCAewLZd6D3Dvb25wr4n1fAinq69w6s7p+2AlbV06sBeuOnCFhZT/cCqO4fLmB1Pb0aoDd+qICKeroXQHX/MAFV9fRqgN74IQIq6+leANX93QKq6+nVAL3x3QK8E3j1/hTw9DfhV7+DvflzBXAFsBr6RUAq/V59J3yHUBrTu4Sf3p9bELcgbkGuLcj7pTz77whI+zVhJROggGTA0vAUIBFKvk4ByYCl4SlAIpR8nQKSAUvDU4BEKPk6BSQDloanAIlQ8nUKSAYsDU8BEqHk638A1z09cEe0n1IAAAAASUVORK5CYII="
+                secret: ((platform_kibana_client_secret_staging))
+              platform-kibana-production:
+                <<: *client-template
+                scope: openid,email,profile
+                redirect-uri: https://logs-platform.fr.cloud.gov/oauth2/callback
+                name: "Production Logs Platform"
+                show-on-homepage: true
+                app-launch-url: https://logs-platform.fr.cloud.gov/
+                app-icon: "iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAAAXNSR0IArs4c6QAAA7JJREFUeF7tmwtu3DAMBZ2bNSdre7L2ZmkEVIFr2CYfPyLdfQsECGBJFGcsWeYmbxs/pQTeSqMz+EYBxTcBBVBAMYHi8FwBFFBMoDg8VwAFFBMoDs8VQAHFBIrDcwVQQDGB2PA/PocbP+oPV4AaldhwgP++bVh5hwJErqoGE/5oDDGFGqum8nqN9vApYLH/I3wKWCjgDD4FLBJwBZ8CFgi4g08ByQIk+BSQKEADnwKSBGjhU0CCAAT+723b3pE5dH8Rm3UVqL6CABDapsKHl0tgYpqh9sn//OywWkI6/M4CzpJfKWEJ/K4C7pJfIWEZ/I4CNMlnStDEn9sn/MA923c7PYSR5DMkIPFD4HdaAUjy80aKlIDED4PfRQCS/HEVR0hA4ofC7yAASf7q6OqRgMQPh18tAEleem+wSEDip8CvFIAkL8G3PBOQ+GnwqwSgyY95flNa0KwEND5U21HO86vZ6mOoNflfQRKs8bVcx/hQyWSlAG/yXgne+JKEOT7EFGoszeDmelTyVglR8a9S3I8PMYUaGwVEJ49KGNMef7Gm+VgeuMf8IKZQY00GhzbR8OfwiATttCPgwwebTAFZ8DMkRMFvIyAbfqSESPgtBKyCHyEhGn65gNXwPRIs8Ee8D+GhAm3rUGMhcBV8iwQr/LYCquEjEjzwWwroAl8jwQu/nYBu8O8kRMBvJaAr/DMJUfDbCOgOfy9h/B5ZUi4/BT0FvrYEgbYrFyBNYCZkWfaaerqmDQp1tteMLeUPHe2hxn9nKU1gNLPC1/yf7Yiv+eYLlaCt50v5Q0yhxkoBHviaV/kJIFICUs9vLcALHxEw2kZIQOv5bQVEwEcFeCWcHSikXaGlgCj4FgFWCVenuccJiIRvFYBKuDtKP0pANHyPAK0E6T3mMQIs8CNe5b17cHX/f47Hku2zs/RIwAqfAg5ELQLGXyR4aivVd2B1fPcKQN8wj+2rAVTHpwDhDpJ2Ba9ACqCAewLZd6D3Dvb25wr4n1fAinq69w6s7p+2AlbV06sBeuOnCFhZT/cCqO4fLmB1Pb0aoDd+qICKeroXQHX/MAFV9fRqgN74IQIq6+leANX93QKq6+nVAL3x3QK8E3j1/hTw9DfhV7+DvflzBXAFsBr6RUAq/V59J3yHUBrTu4Sf3p9bELcgbkGuLcj7pTz77whI+zVhJROggGTA0vAUIBFKvk4ByYCl4SlAIpR8nQKSAUvDU4BEKPk6BSQDloanAIlQ8nUKSAYsDU8BEqHk638A1z09cEe0n1IAAAAASUVORK5CYII="
+                secret: ((platform_kibana_client_secret_production))
 
-          # Monitoring auth
-          prometheus-staging:
-            <<: *client-template
-            scope: openid,email,profile
-            redirect-uri: https://prometheus.fr-stage.cloud.gov/oauth2/callback,https://alertmanager.fr-stage.cloud.gov/oauth2/callback,https://grafana.fr-stage.cloud.gov/oauth2/callback,https://grafana.fr-stage.cloud.gov/login/generic_oauth
-            name: "Staging Prometheus"
-            show-on-homepage: true
-            app-launch-url: https://prometheus.fr-stage.cloud.gov
-            app-icon: 'iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAAAXNSR0IArs4c6QAABV9JREFUeF7tXFuOFDEM7D0ZcDLgZMDJAK8mUoi6U+VX0r24f0baTRy7qmwnmcfbUc9WBN62rl6LH0XAZhEUAUXAZgQ2L18ZUARsRmDz8pUBRcBmBDYvXxlQBGxGYPPylQFFAI3A5+M4vh7H8YWesWbgb7DMVORPyYBvL/Al1rv5/KEJaKqX1/YUAQsy+wz4ImAB8LJEX27OlqwMSCTix3EcfbkpAhLB7k3PSs7oQmVAMCmo5BQBwYD35piSUwQkEWABv84BAWRo6n014QDAx2Yryvc81YSN6InyveBXCdoMfhFgICBK+W1puQ39afAja8rtL+OQgz0w3/+WqU/gNFwEKKSk2WoK+HIoQ3NE/db3BMS+PO1VEcrlUCSwbe8HaE64DXyJkilZ/XgWxNEfi42ztW5JgBX8FiAKSsZpStEVqREkIF+XZ4AXfAEXlaFGFAMg8sdT0sSP2xGAHGLAY8pQb0dA7HdG7Upb3kNG19tbd1fRp0qkNgb8Noa1NdZlIYIFfZyrKWts75mOiySABYwpG5peEALEy4i3HKl9iSSALT2aNTWlSB38xYSlJGjAmAWYof623g4SNFnats59v6HnRxDAAkQ7dcI0u0ZUFmi3uVfZD3tKBAGs+leuNSOCbdJsKZrFD21EgMLUfo/6RzDbNYKkvOYRMMQPeWVFw/iN4k89iDGBMEFogOx7g5Smq8u7di749QJ9vEFlfGdK0VYC0OISQESWsQS1/T97Xc2cuFEZmdmA4vOAwygIOsAimziOEdGsmc42CBBfOGASOOO4x34i5v+YZoSEskAM9nb6fpN2EkYEPEH97ImbIcAkGKtCGdVYbZsCcU5izhlwT2/xwQoSIuBJ6m+4oYackgVWAj5S+WEJSNnRWQhg0tVi15LBkXOYuMLLkAUoVH5SUjUSacfO7hEEZNb/jE819HygPhAeW0YGhDv5QqjPvBVrnCVKeHZbCEAqCU/Ti8uzDBJQH/gvCZj1nGgSHkEA2oJasuqqL6KGL/MiSUAEhG9FLWCtIoABvxEXScKq+N59vysBGvCjSbg9AdlN2AJ+FAmPKEGZBHjAjyABEfChd0ER4HtJQD48ggBLQ0SBW24iMvyw2Ax/QwaBpVUJstcHIADIw34iQgsY8kVrDwrHsgtCdVKzu0IBj+D3d0EZJKAd0GMIYK4jrOA3UjTzo/yxCDa8BIlBtBNiyhBSG9NQWRIYf5AtxgYsOeMAK6OIAFSGULAM+NpMQFmABBFefhBIMzaZPjBzGAWrveNhCJ0pmJmPCFSr30OAzGVAPHOaIc+S7kxWXoHIxGKtFik9gOkDMuYMyCy1WYll/EkpP94MYAKWNUbVIaV6gkW2R0Ew4HtxSssAMcwEMAaNQPIQgESh9UXbi9R9IKKuMfWzDxyN9/iECOjVjITQwPT4AwmJMM5kQd8PMglgNgcSM+uzJxsh+JG1jVWTBISuEDzbPSYDGB+WqD+SACZwShHO93hZZTO+eITA2H8fE1GC2mJRwVvOAM0HNhMRQOmlJyvFokiwALBzbUTo5f8jMyBahZoSEFUCLcSbwY8uQb0jK0tBlPI9pc9MQkYGZPSE8aumovjZV1S1gGwBPzMDoknQAqoZv7zs9M5lZsATSNgK/ooMaCRENUmNsmdj6a+RRi14ZWdFBvRrRzVMDy7bVb+6BJ2BtYOIWwGfdRDTKnMFEbcpN2fgrC5BVwRFbivbD3WI4tkf7dAKJ2z8XQgYA2ofwJK/y8/RyNP/EuIIbDsnyLjbg36HHhCmoKcbumsGPB1X2v8igIYqZ2ARkIMrbbUIoKHKGVgE5OBKWy0CaKhyBhYBObjSVv8AEAhdcDlcjIEAAAAASUVORK5CYII='
-            secret: ((prometheus_client_secret_staging))
-          prometheus-production:
-            <<: *client-template
-            scope: openid,email,profile
-            redirect-uri: https://prometheus.fr.cloud.gov/oauth2/callback,https://alertmanager.fr.cloud.gov/oauth2/callback,https://grafana.fr.cloud.gov/oauth2/callback,https://grafana.fr.cloud.gov/login/generic_oauth
-            name: "Production Prometheus"
-            show-on-homepage: true
-            app-launch-url: https://prometheus.fr.cloud.gov
-            app-icon: 'iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAAAXNSR0IArs4c6QAABV9JREFUeF7tXFuOFDEM7D0ZcDLgZMDJAK8mUoi6U+VX0r24f0baTRy7qmwnmcfbUc9WBN62rl6LH0XAZhEUAUXAZgQ2L18ZUARsRmDz8pUBRcBmBDYvXxlQBGxGYPPylQFFAI3A5+M4vh7H8YWesWbgb7DMVORPyYBvL/Al1rv5/KEJaKqX1/YUAQsy+wz4ImAB8LJEX27OlqwMSCTix3EcfbkpAhLB7k3PSs7oQmVAMCmo5BQBwYD35piSUwQkEWABv84BAWRo6n014QDAx2Yryvc81YSN6InyveBXCdoMfhFgICBK+W1puQ39afAja8rtL+OQgz0w3/+WqU/gNFwEKKSk2WoK+HIoQ3NE/db3BMS+PO1VEcrlUCSwbe8HaE64DXyJkilZ/XgWxNEfi42ztW5JgBX8FiAKSsZpStEVqREkIF+XZ4AXfAEXlaFGFAMg8sdT0sSP2xGAHGLAY8pQb0dA7HdG7Upb3kNG19tbd1fRp0qkNgb8Noa1NdZlIYIFfZyrKWts75mOiySABYwpG5peEALEy4i3HKl9iSSALT2aNTWlSB38xYSlJGjAmAWYof623g4SNFnats59v6HnRxDAAkQ7dcI0u0ZUFmi3uVfZD3tKBAGs+leuNSOCbdJsKZrFD21EgMLUfo/6RzDbNYKkvOYRMMQPeWVFw/iN4k89iDGBMEFogOx7g5Smq8u7di749QJ9vEFlfGdK0VYC0OISQESWsQS1/T97Xc2cuFEZmdmA4vOAwygIOsAimziOEdGsmc42CBBfOGASOOO4x34i5v+YZoSEskAM9nb6fpN2EkYEPEH97ImbIcAkGKtCGdVYbZsCcU5izhlwT2/xwQoSIuBJ6m+4oYackgVWAj5S+WEJSNnRWQhg0tVi15LBkXOYuMLLkAUoVH5SUjUSacfO7hEEZNb/jE819HygPhAeW0YGhDv5QqjPvBVrnCVKeHZbCEAqCU/Ti8uzDBJQH/gvCZj1nGgSHkEA2oJasuqqL6KGL/MiSUAEhG9FLWCtIoABvxEXScKq+N59vysBGvCjSbg9AdlN2AJ+FAmPKEGZBHjAjyABEfChd0ER4HtJQD48ggBLQ0SBW24iMvyw2Ax/QwaBpVUJstcHIADIw34iQgsY8kVrDwrHsgtCdVKzu0IBj+D3d0EZJKAd0GMIYK4jrOA3UjTzo/yxCDa8BIlBtBNiyhBSG9NQWRIYf5AtxgYsOeMAK6OIAFSGULAM+NpMQFmABBFefhBIMzaZPjBzGAWrveNhCJ0pmJmPCFSr30OAzGVAPHOaIc+S7kxWXoHIxGKtFik9gOkDMuYMyCy1WYll/EkpP94MYAKWNUbVIaV6gkW2R0Ew4HtxSssAMcwEMAaNQPIQgESh9UXbi9R9IKKuMfWzDxyN9/iECOjVjITQwPT4AwmJMM5kQd8PMglgNgcSM+uzJxsh+JG1jVWTBISuEDzbPSYDGB+WqD+SACZwShHO93hZZTO+eITA2H8fE1GC2mJRwVvOAM0HNhMRQOmlJyvFokiwALBzbUTo5f8jMyBahZoSEFUCLcSbwY8uQb0jK0tBlPI9pc9MQkYGZPSE8aumovjZV1S1gGwBPzMDoknQAqoZv7zs9M5lZsATSNgK/ooMaCRENUmNsmdj6a+RRi14ZWdFBvRrRzVMDy7bVb+6BJ2BtYOIWwGfdRDTKnMFEbcpN2fgrC5BVwRFbivbD3WI4tkf7dAKJ2z8XQgYA2ofwJK/y8/RyNP/EuIIbDsnyLjbg36HHhCmoKcbumsGPB1X2v8igIYqZ2ARkIMrbbUIoKHKGVgE5OBKWy0CaKhyBhYBObjSVv8AEAhdcDlcjIEAAAAASUVORK5CYII='
-            secret: ((prometheus_client_secret_production))
-          doomsday-staging:
-            <<: *client-template
-            scope: openid,email,profile
-            redirect-uri: https://doomsday.fr-stage.cloud.gov/oauth2/idpresponse
-            name: "Staging Doomsday"
-            show-on-homepage: true
-            app-launch-url: https://doomsday.fr-stage.cloud.gov
-            app-icon: 'iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAAAXNSR0IArs4c6QAABDxJREFUeF7tmmF2GyEMhJ2btSdre7L2Zm3oC3mbjTcapBkEtvK3IGC+YYTtvtzqL1WBl9TVa/FbAUg2QQEoAHQF/hoVlzLdUpshoSgAJCG9ZQqAVznSvAJAEtJbpgB4lSPNKwBBIb/dbrc/gRpKANG9fTrWaq+g36/it0N+D0BQAWj7avv79ariz4BBPkxdCUAXv2/QC0EBoIvf90aDsAqA5qgfd1zlgcAGcBafCmEFAFfie28CE8CV+H1vrVc1k7j/sgFY4nsgsABY4lMgZAJADzgKgQFAtbflXkGKg0YBKPZ0GVGZN6Bvin3gCAD2XszesAKAtknmwb0AmHswhe8DVgHAhgAL8DYwRfy29koAsiCkib8igBEI4Tf44ZqcP4Vf3SDPB8Mvb+NqNwBtzEzx+5oWBLr4q94AC4JCfAuCRPzVAdyLI6X4VxBk4u8A4AhhhvhnCFLxdwHQIUR+pBl9lk5bc9Um7BFsyzkFIBlbASgAyQokL7/bDRj92oAhr/QltBsA9Bc0hvC9RgE4qGl91cwUvteSfv7Y6QZkuL9DkOkkKyywovVlmWDJ95KyGNoFQEbzPQKVxdAuADLjp4F4egAZzfccaZIY2uEGIO5niGP1GMYan/rUDgAsYVjxMGudDxBWB4A0X9b/VEbWoutFL0h+CyLxwzyD1WvoMcTcPFn7/+UsQVjuP/8SdnUWVty9118ZAOJ+tiOtGHoqABlN0QLQnEuFvuoNQIRgxw8aQ08BAIkflXmm3jzVIaINeXbzPe4XuX003WiFooof5iPup8bAnb1bBqCtvyKAqRFwYZxpe1ADQNw8enlUzXckhmjP0R0BqPfcQCB9gBJD6sNYWbqi+6c+R5UAFPFDcR1IfUofUAJgu5+WuyAAJIbC+oULXBxG4f4Zzfd8HMtE4RupAmBtHDRh+m8X8hhSAHgU9yOvoXAsZgFQrOu5VdYcpA+EYogtBOL+jCy3hP7q360Y2g4AG3pEXGSuBSAUQ2wxrOa7m/uRPtDGuHV0T7xjHSR+QtcVsatojGUs97mYAKxN7uh+9GsJdwyxACDu3xmA9RpKB2C5P5STolgZKWsBaLVcMcS4AY/ufjSGlgbAAD3iWMVYyXM0KsyzuF/2HJ0BILqGws3emlavG46hqDjWhnZ++dyDRI+hCAAkfoYd4bXmpHnWa2j4ORoB8GzuR/vAkOm8ABD3P1r8SJ6jXgCW+3f/4BX5enoohjwAntn9aAzBusIDD5ZAAHjqTuqjlGWsBID7wKhQiPiPmv1HcrTnqAIAxWKbF4H7wCgA6+ptrht1+1AMjQBA4od6gs2L0QGU+8ccAcUQegPK/WPi99GmvuaAt0rlfh8AM4YQAOV+n/htlhlDBcAvLjKTAgBZqMY4FUBugLN0TUMUKACISsIxBUAoLlK6ACAqCccUAKG4SOkCgKgkHFMAhOIipf8BAjIBcKsDlJ4AAAAASUVORK5CYII='
-            secret: ((doomsday_client_secret_staging))
-          doomsday-production:
-            <<: *client-template
-            scope: openid,email,profile
-            redirect-uri: https://doomsday.fr.cloud.gov/oauth2/idpresponse
-            name: "Production Doomsday"
-            show-on-homepage: true
-            app-launch-url: https://doomsday.fr.cloud.gov
-            app-icon: 'iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAAAXNSR0IArs4c6QAABDxJREFUeF7tmmF2GyEMhJ2btSdre7L2Zm3oC3mbjTcapBkEtvK3IGC+YYTtvtzqL1WBl9TVa/FbAUg2QQEoAHQF/hoVlzLdUpshoSgAJCG9ZQqAVznSvAJAEtJbpgB4lSPNKwBBIb/dbrc/gRpKANG9fTrWaq+g36/it0N+D0BQAWj7avv79ariz4BBPkxdCUAXv2/QC0EBoIvf90aDsAqA5qgfd1zlgcAGcBafCmEFAFfie28CE8CV+H1vrVc1k7j/sgFY4nsgsABY4lMgZAJADzgKgQFAtbflXkGKg0YBKPZ0GVGZN6Bvin3gCAD2XszesAKAtknmwb0AmHswhe8DVgHAhgAL8DYwRfy29koAsiCkib8igBEI4Tf44ZqcP4Vf3SDPB8Mvb+NqNwBtzEzx+5oWBLr4q94AC4JCfAuCRPzVAdyLI6X4VxBk4u8A4AhhhvhnCFLxdwHQIUR+pBl9lk5bc9Um7BFsyzkFIBlbASgAyQokL7/bDRj92oAhr/QltBsA9Bc0hvC9RgE4qGl91cwUvteSfv7Y6QZkuL9DkOkkKyywovVlmWDJ95KyGNoFQEbzPQKVxdAuADLjp4F4egAZzfccaZIY2uEGIO5niGP1GMYan/rUDgAsYVjxMGudDxBWB4A0X9b/VEbWoutFL0h+CyLxwzyD1WvoMcTcPFn7/+UsQVjuP/8SdnUWVty9118ZAOJ+tiOtGHoqABlN0QLQnEuFvuoNQIRgxw8aQ08BAIkflXmm3jzVIaINeXbzPe4XuX003WiFooof5iPup8bAnb1bBqCtvyKAqRFwYZxpe1ADQNw8enlUzXckhmjP0R0BqPfcQCB9gBJD6sNYWbqi+6c+R5UAFPFDcR1IfUofUAJgu5+WuyAAJIbC+oULXBxG4f4Zzfd8HMtE4RupAmBtHDRh+m8X8hhSAHgU9yOvoXAsZgFQrOu5VdYcpA+EYogtBOL+jCy3hP7q360Y2g4AG3pEXGSuBSAUQ2wxrOa7m/uRPtDGuHV0T7xjHSR+QtcVsatojGUs97mYAKxN7uh+9GsJdwyxACDu3xmA9RpKB2C5P5STolgZKWsBaLVcMcS4AY/ufjSGlgbAAD3iWMVYyXM0KsyzuF/2HJ0BILqGws3emlavG46hqDjWhnZ++dyDRI+hCAAkfoYd4bXmpHnWa2j4ORoB8GzuR/vAkOm8ABD3P1r8SJ6jXgCW+3f/4BX5enoohjwAntn9aAzBusIDD5ZAAHjqTuqjlGWsBID7wKhQiPiPmv1HcrTnqAIAxWKbF4H7wCgA6+ptrht1+1AMjQBA4od6gs2L0QGU+8ccAcUQegPK/WPi99GmvuaAt0rlfh8AM4YQAOV+n/htlhlDBcAvLjKTAgBZqMY4FUBugLN0TUMUKACISsIxBUAoLlK6ACAqCccUAKG4SOkCgKgkHFMAhOIipf8BAjIBcKsDlJ4AAAAASUVORK5CYII='
-            secret: ((doomsday_client_secret_production))
-          nessus-production:
-            <<: *client-template
-            scope: openid,email,profile
-            redirect-uri: https://nessus.fr.cloud.gov/oauth2/idpresponse
-            name: "Production Nessus"
-            show-on-homepage: true
-            app-launch-url: https://nessus.fr.cloud.gov
-            app-icon: 'iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAAAXNSR0IArs4c6QAABChJREFUeF7tnGF21DAMhNOTUU4GnAw4GaA2Lnlp1tLE0sjJav/Aa13Lnk8aOdnNviz1SlXgJTV6BV8KQHISFIACkKxAcviqgAKQrEBy+KqAJwDwZ1mWX5t9/l7//z157/vwr8uyfNv9UH4WmqShk6+b+fkPgGzk6CVgBEgGjLYmEf3R+mTNoRqFTm4AsIXygwiilxTbNUmCfI2s1JkAtH1GgpBK29tMT9+nBCCCyMYFxLZ3jCRi8/ee1RzNH5kMb/EYFSCblpI/8/IQIDt+d98MALIAOQmdfY1AQC1nv8ZwfcIDgI34EaQzEEbFD/d/lgVJnFExZA45jVh7gke8M9DhKmdVwKgNtY1ZIIx4/lZAijaUIE421E5H2rncesbvZSsl+5kWJLG8MrMnjof1UHVhVoBXL+gJNHLaahVBy34q6U29R1mER/ZTTj70RrMzWy8r2jdkj+xnOwLlSvio2Xlk6xaAx3xU62mi0IlvaIyKtrWLUVtLET+rB2wrYhRCS6AR+0kTfwYAoycjsaGjd7KsV6Sp4s8CoIl1phpEQHkh9/jbBZ3n7W4r8E/jMnuAR3Nu94aQ+/zpWZ99DLVki7UaEABTCT/DKcgK4ovypn4v+73fWbOsGRozmwX1Fi9CWxpu83brrWtIMO/BVwLQ9q4dOS+1p0stdiVQALzLEJyvAICCeQ8vAN6KgvMVAFAw7+EFwFtRcL4CAArmPfzpAWgCeAt+tfmgoz002HgOv5pg3uuFNIUGFwATK0hTaHABKAAmBZIHQUkNDa4KMKGFNIUGF4ACYFIgeRCU1NBgYwWcmTNZMyi8dh0E7R8aXADeFCgAUL76Dy4A/ppCMxYASC7/wQXAX1NoxgIAyeU/uAD4awrNOD0AaDc3HAwd7aHBq1ijD0PcUPOPLcHPmJ0BYP3g7J2FfrQ3+APAZwB4PWR3R0CwnvAfrKpVFXxOHzj7ZYqzAORvC8J/CKfEHwVQEN4BnBbfA0DLAamG3oMUd/P79m2P8u/QcwgjFqSJqh1XLV89o8Xw+r3FTkO0CpnUeL0An5m91D6YRwMwZDO9dUcC0I6rMwHQqvWWADx70GhxuN7fQRYTWQGyDi2zZugDmv2EJko2gBlsSAMQZj+hZNcyvEIf0Kr01gAYSaBZcpr/szavZVhmH9DsJ1yj6B5gacSZfUADEGo/4XQv0Ae06nwKAKxEOOoFqf7P3LiWaRl9QLMfij6MHjBrH9AAhNsPhfDEfUCryqcCwEyG1gvS/Z+9aS3jtAsm9u8p9kwJYnx/gC1wLx7FftgVoN0XKgAEBa5gQ9Qrc6YFCd8rVAHNftgW1ApMO38TCvFhCKr4WQAk7owQMq7Ghz4Z55GpmZ8nap/nSf0OaXYP8IB2qzkKQDLOAlAAkhVIDl8VUACSFUgOXxVQAJIVSA7/F5F8y2EoPqc1AAAAAElFTkSuQmCC'
-            secret: ((nessus_client_secret_production))
-        login: {client_secret: ((uaa_login_client_secret))}
-        zones: {internal: {hostnames: ["opsuaa.internal"]}}
-      login:
-        url: https://opslogin.fr.cloud.gov
-        branding:
-          product_logo: "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"
-          square_logo: "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"
-          company_name: "cloud.gov operations"
-        links:
-          passwd: "/#"
-          signup: "/#"
-        self_service_links_enabled: false
-        saml:
-          entity_base_url: opslogin.fr.cloud.gov
-          activeKeyId: key-2
-          keys:
-            key-2:
-              key: ((uaa_login_saml_20190222.private_key))
-              certificate: ((uaa_login_saml_20190222.certificate))
-              passphrase: ""
-          providers: ((saml_providers))
-      uaadb:
-        address: ((terraform_outputs.opsuaa_rds_host))
-        port: ((terraform_outputs.opsuaa_rds_port))
-        user: ((terraform_outputs.opsuaa_rds_username))
-        password: ((terraform_outputs.opsuaa_rds_password))
-        db_scheme: postgresql
-        databases:
-        - tag: uaa
-          name: opsuaa
-        roles:
-        - tag: admin
-          name: opsuaa
-          password: ((terraform_outputs.opsuaa_rds_password))
-  - name: uaa-customized
-    release: uaa-customized
-    properties: {}
-  - name: secureproxy
-    release: secureproxy
-    properties:
-      secureproxy:
-        listen_port: 8081
-        proxy_port: 8080
+              # Monitoring auth
+              prometheus-staging:
+                <<: *client-template
+                scope: openid,email,profile
+                redirect-uri: https://prometheus.fr-stage.cloud.gov/oauth2/callback,https://alertmanager.fr-stage.cloud.gov/oauth2/callback,https://grafana.fr-stage.cloud.gov/oauth2/callback,https://grafana.fr-stage.cloud.gov/login/generic_oauth
+                name: "Staging Prometheus"
+                show-on-homepage: true
+                app-launch-url: https://prometheus.fr-stage.cloud.gov
+                app-icon: "iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAAAXNSR0IArs4c6QAABV9JREFUeF7tXFuOFDEM7D0ZcDLgZMDJAK8mUoi6U+VX0r24f0baTRy7qmwnmcfbUc9WBN62rl6LH0XAZhEUAUXAZgQ2L18ZUARsRmDz8pUBRcBmBDYvXxlQBGxGYPPylQFFAI3A5+M4vh7H8YWesWbgb7DMVORPyYBvL/Al1rv5/KEJaKqX1/YUAQsy+wz4ImAB8LJEX27OlqwMSCTix3EcfbkpAhLB7k3PSs7oQmVAMCmo5BQBwYD35piSUwQkEWABv84BAWRo6n014QDAx2Yryvc81YSN6InyveBXCdoMfhFgICBK+W1puQ39afAja8rtL+OQgz0w3/+WqU/gNFwEKKSk2WoK+HIoQ3NE/db3BMS+PO1VEcrlUCSwbe8HaE64DXyJkilZ/XgWxNEfi42ztW5JgBX8FiAKSsZpStEVqREkIF+XZ4AXfAEXlaFGFAMg8sdT0sSP2xGAHGLAY8pQb0dA7HdG7Upb3kNG19tbd1fRp0qkNgb8Noa1NdZlIYIFfZyrKWts75mOiySABYwpG5peEALEy4i3HKl9iSSALT2aNTWlSB38xYSlJGjAmAWYof623g4SNFnats59v6HnRxDAAkQ7dcI0u0ZUFmi3uVfZD3tKBAGs+leuNSOCbdJsKZrFD21EgMLUfo/6RzDbNYKkvOYRMMQPeWVFw/iN4k89iDGBMEFogOx7g5Smq8u7di749QJ9vEFlfGdK0VYC0OISQESWsQS1/T97Xc2cuFEZmdmA4vOAwygIOsAimziOEdGsmc42CBBfOGASOOO4x34i5v+YZoSEskAM9nb6fpN2EkYEPEH97ImbIcAkGKtCGdVYbZsCcU5izhlwT2/xwQoSIuBJ6m+4oYackgVWAj5S+WEJSNnRWQhg0tVi15LBkXOYuMLLkAUoVH5SUjUSacfO7hEEZNb/jE819HygPhAeW0YGhDv5QqjPvBVrnCVKeHZbCEAqCU/Ti8uzDBJQH/gvCZj1nGgSHkEA2oJasuqqL6KGL/MiSUAEhG9FLWCtIoABvxEXScKq+N59vysBGvCjSbg9AdlN2AJ+FAmPKEGZBHjAjyABEfChd0ER4HtJQD48ggBLQ0SBW24iMvyw2Ax/QwaBpVUJstcHIADIw34iQgsY8kVrDwrHsgtCdVKzu0IBj+D3d0EZJKAd0GMIYK4jrOA3UjTzo/yxCDa8BIlBtBNiyhBSG9NQWRIYf5AtxgYsOeMAK6OIAFSGULAM+NpMQFmABBFefhBIMzaZPjBzGAWrveNhCJ0pmJmPCFSr30OAzGVAPHOaIc+S7kxWXoHIxGKtFik9gOkDMuYMyCy1WYll/EkpP94MYAKWNUbVIaV6gkW2R0Ew4HtxSssAMcwEMAaNQPIQgESh9UXbi9R9IKKuMfWzDxyN9/iECOjVjITQwPT4AwmJMM5kQd8PMglgNgcSM+uzJxsh+JG1jVWTBISuEDzbPSYDGB+WqD+SACZwShHO93hZZTO+eITA2H8fE1GC2mJRwVvOAM0HNhMRQOmlJyvFokiwALBzbUTo5f8jMyBahZoSEFUCLcSbwY8uQb0jK0tBlPI9pc9MQkYGZPSE8aumovjZV1S1gGwBPzMDoknQAqoZv7zs9M5lZsATSNgK/ooMaCRENUmNsmdj6a+RRi14ZWdFBvRrRzVMDy7bVb+6BJ2BtYOIWwGfdRDTKnMFEbcpN2fgrC5BVwRFbivbD3WI4tkf7dAKJ2z8XQgYA2ofwJK/y8/RyNP/EuIIbDsnyLjbg36HHhCmoKcbumsGPB1X2v8igIYqZ2ARkIMrbbUIoKHKGVgE5OBKWy0CaKhyBhYBObjSVv8AEAhdcDlcjIEAAAAASUVORK5CYII="
+                secret: ((prometheus_client_secret_staging))
+              prometheus-production:
+                <<: *client-template
+                scope: openid,email,profile
+                redirect-uri: https://prometheus.fr.cloud.gov/oauth2/callback,https://alertmanager.fr.cloud.gov/oauth2/callback,https://grafana.fr.cloud.gov/oauth2/callback,https://grafana.fr.cloud.gov/login/generic_oauth
+                name: "Production Prometheus"
+                show-on-homepage: true
+                app-launch-url: https://prometheus.fr.cloud.gov
+                app-icon: "iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAAAXNSR0IArs4c6QAABV9JREFUeF7tXFuOFDEM7D0ZcDLgZMDJAK8mUoi6U+VX0r24f0baTRy7qmwnmcfbUc9WBN62rl6LH0XAZhEUAUXAZgQ2L18ZUARsRmDz8pUBRcBmBDYvXxlQBGxGYPPylQFFAI3A5+M4vh7H8YWesWbgb7DMVORPyYBvL/Al1rv5/KEJaKqX1/YUAQsy+wz4ImAB8LJEX27OlqwMSCTix3EcfbkpAhLB7k3PSs7oQmVAMCmo5BQBwYD35piSUwQkEWABv84BAWRo6n014QDAx2Yryvc81YSN6InyveBXCdoMfhFgICBK+W1puQ39afAja8rtL+OQgz0w3/+WqU/gNFwEKKSk2WoK+HIoQ3NE/db3BMS+PO1VEcrlUCSwbe8HaE64DXyJkilZ/XgWxNEfi42ztW5JgBX8FiAKSsZpStEVqREkIF+XZ4AXfAEXlaFGFAMg8sdT0sSP2xGAHGLAY8pQb0dA7HdG7Upb3kNG19tbd1fRp0qkNgb8Noa1NdZlIYIFfZyrKWts75mOiySABYwpG5peEALEy4i3HKl9iSSALT2aNTWlSB38xYSlJGjAmAWYof623g4SNFnats59v6HnRxDAAkQ7dcI0u0ZUFmi3uVfZD3tKBAGs+leuNSOCbdJsKZrFD21EgMLUfo/6RzDbNYKkvOYRMMQPeWVFw/iN4k89iDGBMEFogOx7g5Smq8u7di749QJ9vEFlfGdK0VYC0OISQESWsQS1/T97Xc2cuFEZmdmA4vOAwygIOsAimziOEdGsmc42CBBfOGASOOO4x34i5v+YZoSEskAM9nb6fpN2EkYEPEH97ImbIcAkGKtCGdVYbZsCcU5izhlwT2/xwQoSIuBJ6m+4oYackgVWAj5S+WEJSNnRWQhg0tVi15LBkXOYuMLLkAUoVH5SUjUSacfO7hEEZNb/jE819HygPhAeW0YGhDv5QqjPvBVrnCVKeHZbCEAqCU/Ti8uzDBJQH/gvCZj1nGgSHkEA2oJasuqqL6KGL/MiSUAEhG9FLWCtIoABvxEXScKq+N59vysBGvCjSbg9AdlN2AJ+FAmPKEGZBHjAjyABEfChd0ER4HtJQD48ggBLQ0SBW24iMvyw2Ax/QwaBpVUJstcHIADIw34iQgsY8kVrDwrHsgtCdVKzu0IBj+D3d0EZJKAd0GMIYK4jrOA3UjTzo/yxCDa8BIlBtBNiyhBSG9NQWRIYf5AtxgYsOeMAK6OIAFSGULAM+NpMQFmABBFefhBIMzaZPjBzGAWrveNhCJ0pmJmPCFSr30OAzGVAPHOaIc+S7kxWXoHIxGKtFik9gOkDMuYMyCy1WYll/EkpP94MYAKWNUbVIaV6gkW2R0Ew4HtxSssAMcwEMAaNQPIQgESh9UXbi9R9IKKuMfWzDxyN9/iECOjVjITQwPT4AwmJMM5kQd8PMglgNgcSM+uzJxsh+JG1jVWTBISuEDzbPSYDGB+WqD+SACZwShHO93hZZTO+eITA2H8fE1GC2mJRwVvOAM0HNhMRQOmlJyvFokiwALBzbUTo5f8jMyBahZoSEFUCLcSbwY8uQb0jK0tBlPI9pc9MQkYGZPSE8aumovjZV1S1gGwBPzMDoknQAqoZv7zs9M5lZsATSNgK/ooMaCRENUmNsmdj6a+RRi14ZWdFBvRrRzVMDy7bVb+6BJ2BtYOIWwGfdRDTKnMFEbcpN2fgrC5BVwRFbivbD3WI4tkf7dAKJ2z8XQgYA2ofwJK/y8/RyNP/EuIIbDsnyLjbg36HHhCmoKcbumsGPB1X2v8igIYqZ2ARkIMrbbUIoKHKGVgE5OBKWy0CaKhyBhYBObjSVv8AEAhdcDlcjIEAAAAASUVORK5CYII="
+                secret: ((prometheus_client_secret_production))
+              doomsday-staging:
+                <<: *client-template
+                scope: openid,email,profile
+                redirect-uri: https://doomsday.fr-stage.cloud.gov/oauth2/idpresponse
+                name: "Staging Doomsday"
+                show-on-homepage: true
+                app-launch-url: https://doomsday.fr-stage.cloud.gov
+                app-icon: "iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAAAXNSR0IArs4c6QAABDxJREFUeF7tmmF2GyEMhJ2btSdre7L2Zm3oC3mbjTcapBkEtvK3IGC+YYTtvtzqL1WBl9TVa/FbAUg2QQEoAHQF/hoVlzLdUpshoSgAJCG9ZQqAVznSvAJAEtJbpgB4lSPNKwBBIb/dbrc/gRpKANG9fTrWaq+g36/it0N+D0BQAWj7avv79ariz4BBPkxdCUAXv2/QC0EBoIvf90aDsAqA5qgfd1zlgcAGcBafCmEFAFfie28CE8CV+H1vrVc1k7j/sgFY4nsgsABY4lMgZAJADzgKgQFAtbflXkGKg0YBKPZ0GVGZN6Bvin3gCAD2XszesAKAtknmwb0AmHswhe8DVgHAhgAL8DYwRfy29koAsiCkib8igBEI4Tf44ZqcP4Vf3SDPB8Mvb+NqNwBtzEzx+5oWBLr4q94AC4JCfAuCRPzVAdyLI6X4VxBk4u8A4AhhhvhnCFLxdwHQIUR+pBl9lk5bc9Um7BFsyzkFIBlbASgAyQokL7/bDRj92oAhr/QltBsA9Bc0hvC9RgE4qGl91cwUvteSfv7Y6QZkuL9DkOkkKyywovVlmWDJ95KyGNoFQEbzPQKVxdAuADLjp4F4egAZzfccaZIY2uEGIO5niGP1GMYan/rUDgAsYVjxMGudDxBWB4A0X9b/VEbWoutFL0h+CyLxwzyD1WvoMcTcPFn7/+UsQVjuP/8SdnUWVty9118ZAOJ+tiOtGHoqABlN0QLQnEuFvuoNQIRgxw8aQ08BAIkflXmm3jzVIaINeXbzPe4XuX003WiFooof5iPup8bAnb1bBqCtvyKAqRFwYZxpe1ADQNw8enlUzXckhmjP0R0BqPfcQCB9gBJD6sNYWbqi+6c+R5UAFPFDcR1IfUofUAJgu5+WuyAAJIbC+oULXBxG4f4Zzfd8HMtE4RupAmBtHDRh+m8X8hhSAHgU9yOvoXAsZgFQrOu5VdYcpA+EYogtBOL+jCy3hP7q360Y2g4AG3pEXGSuBSAUQ2wxrOa7m/uRPtDGuHV0T7xjHSR+QtcVsatojGUs97mYAKxN7uh+9GsJdwyxACDu3xmA9RpKB2C5P5STolgZKWsBaLVcMcS4AY/ufjSGlgbAAD3iWMVYyXM0KsyzuF/2HJ0BILqGws3emlavG46hqDjWhnZ++dyDRI+hCAAkfoYd4bXmpHnWa2j4ORoB8GzuR/vAkOm8ABD3P1r8SJ6jXgCW+3f/4BX5enoohjwAntn9aAzBusIDD5ZAAHjqTuqjlGWsBID7wKhQiPiPmv1HcrTnqAIAxWKbF4H7wCgA6+ptrht1+1AMjQBA4od6gs2L0QGU+8ccAcUQegPK/WPi99GmvuaAt0rlfh8AM4YQAOV+n/htlhlDBcAvLjKTAgBZqMY4FUBugLN0TUMUKACISsIxBUAoLlK6ACAqCccUAKG4SOkCgKgkHFMAhOIipf8BAjIBcKsDlJ4AAAAASUVORK5CYII="
+                secret: ((doomsday_client_secret_staging))
+              doomsday-production:
+                <<: *client-template
+                scope: openid,email,profile
+                redirect-uri: https://doomsday.fr.cloud.gov/oauth2/idpresponse
+                name: "Production Doomsday"
+                show-on-homepage: true
+                app-launch-url: https://doomsday.fr.cloud.gov
+                app-icon: "iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAAAXNSR0IArs4c6QAABDxJREFUeF7tmmF2GyEMhJ2btSdre7L2Zm3oC3mbjTcapBkEtvK3IGC+YYTtvtzqL1WBl9TVa/FbAUg2QQEoAHQF/hoVlzLdUpshoSgAJCG9ZQqAVznSvAJAEtJbpgB4lSPNKwBBIb/dbrc/gRpKANG9fTrWaq+g36/it0N+D0BQAWj7avv79ariz4BBPkxdCUAXv2/QC0EBoIvf90aDsAqA5qgfd1zlgcAGcBafCmEFAFfie28CE8CV+H1vrVc1k7j/sgFY4nsgsABY4lMgZAJADzgKgQFAtbflXkGKg0YBKPZ0GVGZN6Bvin3gCAD2XszesAKAtknmwb0AmHswhe8DVgHAhgAL8DYwRfy29koAsiCkib8igBEI4Tf44ZqcP4Vf3SDPB8Mvb+NqNwBtzEzx+5oWBLr4q94AC4JCfAuCRPzVAdyLI6X4VxBk4u8A4AhhhvhnCFLxdwHQIUR+pBl9lk5bc9Um7BFsyzkFIBlbASgAyQokL7/bDRj92oAhr/QltBsA9Bc0hvC9RgE4qGl91cwUvteSfv7Y6QZkuL9DkOkkKyywovVlmWDJ95KyGNoFQEbzPQKVxdAuADLjp4F4egAZzfccaZIY2uEGIO5niGP1GMYan/rUDgAsYVjxMGudDxBWB4A0X9b/VEbWoutFL0h+CyLxwzyD1WvoMcTcPFn7/+UsQVjuP/8SdnUWVty9118ZAOJ+tiOtGHoqABlN0QLQnEuFvuoNQIRgxw8aQ08BAIkflXmm3jzVIaINeXbzPe4XuX003WiFooof5iPup8bAnb1bBqCtvyKAqRFwYZxpe1ADQNw8enlUzXckhmjP0R0BqPfcQCB9gBJD6sNYWbqi+6c+R5UAFPFDcR1IfUofUAJgu5+WuyAAJIbC+oULXBxG4f4Zzfd8HMtE4RupAmBtHDRh+m8X8hhSAHgU9yOvoXAsZgFQrOu5VdYcpA+EYogtBOL+jCy3hP7q360Y2g4AG3pEXGSuBSAUQ2wxrOa7m/uRPtDGuHV0T7xjHSR+QtcVsatojGUs97mYAKxN7uh+9GsJdwyxACDu3xmA9RpKB2C5P5STolgZKWsBaLVcMcS4AY/ufjSGlgbAAD3iWMVYyXM0KsyzuF/2HJ0BILqGws3emlavG46hqDjWhnZ++dyDRI+hCAAkfoYd4bXmpHnWa2j4ORoB8GzuR/vAkOm8ABD3P1r8SJ6jXgCW+3f/4BX5enoohjwAntn9aAzBusIDD5ZAAHjqTuqjlGWsBID7wKhQiPiPmv1HcrTnqAIAxWKbF4H7wCgA6+ptrht1+1AMjQBA4od6gs2L0QGU+8ccAcUQegPK/WPi99GmvuaAt0rlfh8AM4YQAOV+n/htlhlDBcAvLjKTAgBZqMY4FUBugLN0TUMUKACISsIxBUAoLlK6ACAqCccUAKG4SOkCgKgkHFMAhOIipf8BAjIBcKsDlJ4AAAAASUVORK5CYII="
+                secret: ((doomsday_client_secret_production))
+              nessus-production:
+                <<: *client-template
+                scope: openid,email,profile
+                redirect-uri: https://nessus.fr.cloud.gov/oauth2/idpresponse
+                name: "Production Nessus"
+                show-on-homepage: true
+                app-launch-url: https://nessus.fr.cloud.gov
+                app-icon: "iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAAAXNSR0IArs4c6QAABChJREFUeF7tnGF21DAMhNOTUU4GnAw4GaA2Lnlp1tLE0sjJav/Aa13Lnk8aOdnNviz1SlXgJTV6BV8KQHISFIACkKxAcviqgAKQrEBy+KqAJwDwZ1mWX5t9/l7//z157/vwr8uyfNv9UH4WmqShk6+b+fkPgGzk6CVgBEgGjLYmEf3R+mTNoRqFTm4AsIXygwiilxTbNUmCfI2s1JkAtH1GgpBK29tMT9+nBCCCyMYFxLZ3jCRi8/ee1RzNH5kMb/EYFSCblpI/8/IQIDt+d98MALIAOQmdfY1AQC1nv8ZwfcIDgI34EaQzEEbFD/d/lgVJnFExZA45jVh7gke8M9DhKmdVwKgNtY1ZIIx4/lZAijaUIE421E5H2rncesbvZSsl+5kWJLG8MrMnjof1UHVhVoBXL+gJNHLaahVBy34q6U29R1mER/ZTTj70RrMzWy8r2jdkj+xnOwLlSvio2Xlk6xaAx3xU62mi0IlvaIyKtrWLUVtLET+rB2wrYhRCS6AR+0kTfwYAoycjsaGjd7KsV6Sp4s8CoIl1phpEQHkh9/jbBZ3n7W4r8E/jMnuAR3Nu94aQ+/zpWZ99DLVki7UaEABTCT/DKcgK4ovypn4v+73fWbOsGRozmwX1Fi9CWxpu83brrWtIMO/BVwLQ9q4dOS+1p0stdiVQALzLEJyvAICCeQ8vAN6KgvMVAFAw7+EFwFtRcL4CAArmPfzpAWgCeAt+tfmgoz002HgOv5pg3uuFNIUGFwATK0hTaHABKAAmBZIHQUkNDa4KMKGFNIUGF4ACYFIgeRCU1NBgYwWcmTNZMyi8dh0E7R8aXADeFCgAUL76Dy4A/ppCMxYASC7/wQXAX1NoxgIAyeU/uAD4awrNOD0AaDc3HAwd7aHBq1ijD0PcUPOPLcHPmJ0BYP3g7J2FfrQ3+APAZwB4PWR3R0CwnvAfrKpVFXxOHzj7ZYqzAORvC8J/CKfEHwVQEN4BnBbfA0DLAamG3oMUd/P79m2P8u/QcwgjFqSJqh1XLV89o8Xw+r3FTkO0CpnUeL0An5m91D6YRwMwZDO9dUcC0I6rMwHQqvWWADx70GhxuN7fQRYTWQGyDi2zZugDmv2EJko2gBlsSAMQZj+hZNcyvEIf0Kr01gAYSaBZcpr/szavZVhmH9DsJ1yj6B5gacSZfUADEGo/4XQv0Ae06nwKAKxEOOoFqf7P3LiWaRl9QLMfij6MHjBrH9AAhNsPhfDEfUCryqcCwEyG1gvS/Z+9aS3jtAsm9u8p9kwJYnx/gC1wLx7FftgVoN0XKgAEBa5gQ9Qrc6YFCd8rVAHNftgW1ApMO38TCvFhCKr4WQAk7owQMq7Ghz4Z55GpmZ8nap/nSf0OaXYP8IB2qzkKQDLOAlAAkhVIDl8VUACSFUgOXxVQAJIVSA7/F5F8y2EoPqc1AAAAAElFTkSuQmCC"
+                secret: ((nessus_client_secret_production))
+            login: { client_secret: ((uaa_login_client_secret)) }
+            zones: { internal: { hostnames: ["opsuaa.internal"] } }
+          login:
+            url: https://opslogin.fr.cloud.gov
+            branding:
+              product_logo: "iVBORw0KGgoAAAANSUhEUgAAAeEAAABhCAYAAADhjRliAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH4QEMERo1nQADMAAAIABJREFUeNrtnXmYFNXV/7+napZGmIGIqHF9WQwwI+N03eoZkGgmixjzmGj8Zdw1MSYm4vaSuOaNxtfERGMSiRqMUWKCxoXFjVeN+5CIwHRV9zAIaBwH3BHQwAzCLF11fn90kUyGrp5ep3uY83keHqCr+9atu33vvXXOuYAgCIIgCIIgCIIgDCeoKHJx/UslJR/tfy0B43tRdjFuP6JDqkYQBEEQEc43s9ccWqJpfwFwjJeht1hzz4zdNu0VqR5BEARBRDhP6BevO5nA8wHs2+9SDMCNsf2qbsD15Eo1CYIgCCLCueJbGwIlI3feDMKlA+TuhRjr5+KOKe9LVQmCIAgiwllSNnvNVFfXHwJzTYo/2cJM33J+V/WUVJcgCIIgIpwh+iXrziXmOwHsk+ZPGYzbY+NwBa6v7pFqEwRBEESEU+WCN0eXlnXdxcBpWaZk6xqd0X1b1RtSdYIgCIKI8ACUXrS23iU8SMD4nCTI6GTQRc7vqu6T6hMEQRBEhBPRyHrJ/msvB9FPAZTmIeOLekt6LsDc4DapRkEQBEFEeDdx39/7ARybz8wzYyNBOzP2u6krpCoFQRCEYS/C+kVrTyLCfABjB+kZxKdYEARBGOYi/G/f30tQGP/j52MldC7mVn0g1SoIgiAMGxEum71mqqtpDwI4qsDPs5mZzhOfYkEQBGFYiLDn+zsPwMgieSbxKRYEQRD2chG+4M3RpWW7fs+g04v00Szd5TO651W3STULgiAIe40Ie76/DxAwoaifjtHJhNnOHdX3S1ULgiAIQ1yEmUovXn8pg29BHnx/8/aQhPt6HczGvOodUuWCIAjC0BPhy9YcUOLoCwCeNRQflIENGtGZvbdXrZRqFwRBEIaMCBfA9zdf9AL4ufgUC4IgCMUvwoX3/c0X4lMsCIIgFK8IZ3Duby7YBWDEIN3rAxCdG7u96nlpBoIgCELRiHCBfH+jBKxn4MxBvKf4FAuCIAhFIsKXvFFZyr2/Z/AZBcjKj5mc9cTakgLcW3yKBUEQhMKJcOkla+tcxgMETCxERjTXreopH7OxpLdjCwoTfauDCbOd26v/Is1CEARBGCQRLgrf37WxO6qPBICSi9YuAuEbBSsQ8SkWBEEQBmsBOuo7Ly5h8FwUNPgGPbL7XwxaUsgCYcY5Zdz18sRZ399fmocgCIKQVxGe3HLVsWM+bo4UNBOOs3j3vx3m/wPQVai8lO98b2O1dcmIff9pHyTNQxAEQcgnJWAee/jrd4wZM7Zu2cYjZh8D0rRBXXkC7T13Tmv91wfzqnfgorXPgfDVwS6MsZuXNR/y5h8nAzwag1sMA9LQ0FDS0dFRRUQTAHwaQCWAXiLaAmCT67rvTpw48R+LFi1y9tbGOnPmzIqdO3ceqWnaeAD74d/ubB3M/KGmaRuY+VXbtnulaw9PlFKlrutWEdEEIjrQ6ydg5m5N0z4G8DYRvRYOhzcVKo+hUOhQAJMdxzmUiPYFUMLMrqZpH7uu+66u62+Ew+F2qc3hASmlePd/esr2DbfV3nhErz5yzODlgG6O3V51dd+P9Ite/SYR/WnQssBu7L/W/2Z55fbWY+EZq2maFgyHwy2FrJz6+voDYrHYaQBOBlAPYJ8BftJJRE2u6y4sLy9fsmLFil0ZDGI3EdGn9pgsMV9p2/b2wS4D0zSPdF33dCL6KoBqAPoAP+kiomZmfiIWiz20evXq93I8yP+QiD6ToHx+adv2m5mkaRjGBZqmqT27Bt2ZThtUSl1HRAenc2/XdbcR0TYi+tB13dXd3d1r1q5dO6Tc9UKh0IGu654G4CQA05FarIH3ADwH4PEJEyYszefktbGxUX/zzTdPIKJvADgOQCq7bFsAvMTMj1RWVj7e1NTUlUUfagCQ0OOFmW+1bfu1bJ8xGAwepOv6TxJdcxznt9FodJ3IbQoiDABM2vvtU6/ctmN0VdWgZMDlut55R4b/48P/jo4piZV9CKAs3/cv6/lo6xEt124qcXYc2ffzQoqwYRiTNE37CTOfmkUZbAZwa0VFxdx0OrBS6m0Ahya4dJBt24MWYUwp9XkA1wFoyCKZGIBHXde9PleDgFLqpUR5IqLPWpa1PMM0FwJoTHDp67ZtP5ZGOq0ApmX5iL0A1gB4FsAi27YjxTp41dbWHuEN/I1ZjhUbieg2Xdfnr1q1qiNX+auuri4LBAIXAvgBgMOySGoLgDsDgcCvli9f3pnJytt13Q0+E9hf27Z9eQ7GrCuI6JcJLn1UUVFxSDaTiL0dLcGq8KCJ626aeFD7gr8Nwv3f7Z1Xbe3x6dzgNgAv5fvmlduiq6fYP3T7C3ChmDRpUrlS6hdEtI6Zz85yYNkfwC86OztfVUrVD5UGWVNTs79hGIsBvJilAANACYBGTdNalVJzZ8yYMUK6/ICUAjAAXA3AVkqtNAzjxGLKYENDQ8AwjJt1XV8L4KwcTNb/i5l/E4vF2k3TPCdHE+ljAoHAWgBzsxRgABgH4Lqurq42wzBOTffH4XD4HQDP+Fw+o7GxUc/2eYnobJ9LfxYBTlOEPcrHffj8sZNX/+gVze3emb9lMC8GiBNXKufRSpr5oPYFfxu//tYqglsUVtChUOjQ0aNHr/QGv1xaqk8EsMw0zW8Ue2M0DGN6aWlpKxH9vxwnrQO4rKenxwqFQhOk26dFPREtVUo9GwwGDy90ZpRSh3V2dq4koiuRe4+Oscy8QCn1qyzzeA0RNQGYlOP87U9EDyul7qmurk534nG3z+cHtbW1NWTZb2sAJApvzET0B+lCmYkwACCw892jjwxfuGnEJ2/lx0jA8XdH6u0ufRTx7cTcjsaxnZ1To1c0j/vw+WNRJGcim6Y52XXdlQBqU/xJB4DXEN82/DCF75cz833FMIgmGbhmEdGLAA5I8SebAbwKYD2Af6b4myrXdVeapnmkdP20OU7TtBbTNI8r4CRtKoBVAI5Ks5+0AtgEIJWT03ZpmrY0i3Z8G4CfDzS2evQAeBdABMBGxGPnp8L5gUBgaUNDQyDVfFVUVPwfgISvkzRNOzvLVbDf7sEyy7Jel66TnJIBC9iNTThi9bU73h9/1sqtnz5+eg7v/WFsS9UK36t/mLwVF697GeCGXN1wnx1tr0969cYRxE7RbM/W19cfEovFXsDAxhrPEtFCx3GeiEajW/peCAaD43RdP8F7h/wV7BkTvJOIzotGo28VYyM0TbOOmR9FcoOaXiJ6mJmXlJWVPdPf6GzGjBn79vb2ngjgG8x8IvwPJxnHzM8Fg8HpxVoeeeDXiL9X7LMXxBVENArAGGY+goimANh3gHTGMPNTSqnGdN5V52qnyHXd5wEcmORrDOBpZl5MREtt297a92JjY6Pe3t5+LOIGXKclSCvGzKeFw+FlGQrwDQAuGeBr7wNYoGnaI+Fw2PLy3DeNKYgbYp4DIJldzqzOzs4HAZzSP41ENDU1xUzTvJeZf5Tg8ikzZsyYnYkhp1emZ/iIs6yCcyHC8cLEqIM3/mX6pz5ufqWt6poQU0nWK0gmPIJF5CS/Ly9hzvq9IADggPefWH7gW4uDGNjCeDBXf6WO4ywEkMyiNapp2pxkA4MnygsALAiFQiHXdf8MYKp3+XVm/rpt2+uLsQFOmzbtU8y8cIB6eVLX9R80Nzf/w+8LK1as+Hh3GXjvwH+LuEV5Ig7UNG1hdXX1MUPNEjhD7knFAjYUCtW6rvs1AOfD/z1mCYCHgsHg56PR6IrB6ieu6y4aYKLa7PWTV/y+4FlAvwTgpZqamv8pKyv7b2a+CkAF4lun59u2ndEq2DTNrzDzj5N8pQvALb29vTe3trZ+4vclr55uamxsvGXDhg3fYeafIe6Ol4iTlVJX2bZ9U4or1vnMfHWCVXpld3f3VwEsTPe5N27c+Hmf8Wvrtm3bHhGJHZi0nGH36Xjj6OrwRW3lXZs/zPbG5GLAd769DhanuIXk/4Ac6/rMmp+8fOBbi2cWkwB7nWIOM89Icv3h7du3z0hnZh4Oh8OO4xwNwAbweElJSV0kEllfrA2wvLz8JgDJtslvsG37xGQCnGAgWwXgGCK6N8nX6gKBwBwZAv6j7bTYtn1DRUXFZGa+EoBf6NZyTdMeqq2tHSxXxsuTTKgA4M8APptMgPvT2tr6iWVZN7quOx3ABgBzLMtakEnmqqurRzHzXUl2X/7JzLNs274umQD3nzBYlnWXrut1AJJt6f6vaZqTU6zfdgAv+Fw+K5Nnd13Xbyv7T21tbd3Sq3K0Eu6L7uyaOqXlyq1vjz//kY8POGZrZuoDx9lv88DCMq96Ey5e+1OOB6dIm5GdGyomrr/R1JyezxZbwdfU1OzPzNclG1gsy/p2JpOQlpaWbbW1tV9qaWnZnspWVaEwTfNIZv5Okq9cbdv2zZmk7QXsOF8p1QXgQp+vXauUmt9/23K441mz3mKa5tPM/IzPCvQwXdf/F8Bl+cyL5wPsu8Jk5rsikciFmbbzaDS6rqamZlqq4piIESNGXM7Mh/hc3gHgc5FIZE0maTc3N2+oq6ub6TjOCgBHJPhKmeu6v0R8iz0V7kbcV7n/hP/LdXV1Y5ubmz9KY4diH8S3w/eoFl3X75aelCcRjhexu99h7XefdFj73f9j2/Yv8znQx+6ovj7DAf4EZv4LgE8VY8GXlpbOgf9pUavLysouzGYXoKWlZdsQaH9XJdmNedxrW9nA27dvnzNmzJgQM5uJ5mkALkXcH1noh2VZryqlvgwgDKA8wVdm19bW3trS0rIxX3lg5h/AfwfL7ujouCzb8ScbAa6pqRnJzJckyf/3MxXgPkL8USgUOtV13RUAAgkE9KtKqWm2bQ94n66urscDgcBmxF0Y/0PMHcc5FcCdaWTtZMS38veYx6WzczXcySY2ow7gJtM0H6ypqRlZRM9ESqmrOB6DuigFWClVivh7t4T9FsC3MzGSGErU1taOYWY/t6lPXNf9bi4md21tbd3M/O0kaZ2XZT/Yq/EGdr+JcElJScnsfN27urq6zKs7H33jbxd6y7OsrOwU+Bu0PRmJRHJyNKoXOMhvUkpJxpP/wLOB8Nt2T2tL2otlkHB3QnrO4Ijw7gI/rbS09BWl1MRCP8zMmTMrDMNYBOCmYh5Yieg4xB3wE/FUMUcpytkWTEnJ1xLN6r3yubu/BXgOhORxn8uHKKWOlqHAnwkTJtwCn/eSnkV+XigvLz8ewFif+y6NRCKthS4bZj7N75rrujfmWPB/C8AvYlYj/N9J9+9f9/hMSo+uq6sbn0oa9fX1B3jjWH+2dHd3Pyq9ZhBFePeuDICIaZonFepBTNOc3NXVtTIPgR7y0XG/kKSD/G6YtL2GJINXzstA07TfZZIX4V9WxX7uJoenahiUQZ0VdT/xIk0d43M5mmvrcc8D4CGfywfV1dUdkUo6lmW9zsyJIiKS4zgprYZjsdjpSPA6k4j+NEw8DopOhAGgkpkfVUoN+irUNM2vMfMqJPerKyb8LD27mXnZcGh4zFznc6k9Eom05fp+I0eOfBk+wRCIqE6GggHr6+kkk6baQe4nXWVlZX8vdJm0tbVNhndKUwKeycc9iejZJMKYTjv2M5xKdUs6UYAOjsViYpCVJiW5biMArjJNs4qZz8n3qTuNjY36hg0brvWsjGkIlbvfjLXZtu2dw6DdEQC/ba+8xAxvamrqUkqtBPD5BAIjoSwHIBKJvKaU2oUEAVUSnSqVI+H3C/u4Mh2bCS+sYsqxDTRNcy3LiqYgiBOT5L0pH2XiOM4yzf+Y1ZRfCVZWVi7p7Oy8DXu+z55iGIaKRCJ2kvKcCiDRqV8vtrS0vCG9pXAr4b4N8KsAmoPBYN5WpnV1dWPb29ufYuafDCUB9raw/EIzvjscGl1tbe1o+Fi8ElE+y+Adn88/LUPBwN0a8dCKiersgFzfzDNeHJeLNkJEzxCRleofZn45xaR9242u63lpx56tRFe27dhzQ7svk9WwX5hL13UlQlaxiLDHZzRNW2kYxim5TjgUCtU6jhMGMGuoFfjbb7+dzJJ887AYzZl9y8B13S15vLVf2qNkKEiJznTrM1N6enpGJWk/RdFPNE3zfe5YLLZ5sNtxsvz4lONdPpOW05OcrETMnChM5daOjo7HpYsUlwgDQAURLc7le2LDMM5yXXc5/Lczi5pYLEZJOoU7HBpdIBCgJKsWJ5/FX6B+sLdMnmI+dZbr11oYNWpUst0tt0jKg5K08UFvx8ycVjuORCLrmTlRlLFPt7e3fzHRb4LB4DE+Y+98iZBVnCIMeO+JlVI/y4EAn01E96PIwk+myc4kAjR2ODS6nTt3JguOsF8eB00/t7AdMhSk0JHjBz4kKtecl195efnOQrSRNMvDtx07jpPPPPpt02dSD2kZaGmaltAgK0k6QhGI8O6Oui4Hyawf6gXuhVP8OE2R2KtYs2bNdgDdPmVwQL7um+Td5YcyFKSE36EOOQ/76b2z9DPsTPcM8L8x8/OJ/gDIOFoWM/u2m1gslpd27AVGGpVufpL0iYU+5fx1Lyzlv/COTvxGgvu+YNv2m9I9MqNkkO7T29vb+2S2iUQiEVsp1Q5gSFuzElE7M++b4HPT2zngvbzduYgHzZ+SoAxm5HHC6efyIgPIACilDgMwxmfwz9eZsW8CMBJ8Xu/VZ0rb0rZtn5bkuV4FUJ2hCLcTJd6R1jRtBoCcu1Hpuj59gPJKd1GwUyn1APaMr15BRCcBeHD3Bzt27DgxURvQNE0iZA2BlfBza9as+WeO0hry0Vhc1/Uz/x9nmmb1cGh4RGT5XArW1dXlfFveNM2j4L+NaaUz9ib60HEcPYuy0H0+LxobAWb+chJhiA5yGxlrGEawCNrwer+VNDN/KS8DtqZ9Mck1K8PnuNvnGc7q9/9EVtEfMrMYZBW7CBPRklyl5brukiFf6Jq2LMlgd+pwaHhJgpJojuOcmYf7nZ3kclMa6Xzs08ZHZ5G3MencqzB6Q9/zufZOOBxeO8htxNdNZjDxXi0t97n8uVAodGiOdyNKAZzuc3lzOBzO6JWfZVlRnwnPrGAwOA6Iu4QCOCHBd+71ykEoYhF2HMdZmqvEotHoSvj7ew4JdF1/Ej7RmwDMLrIDMfJVBo8C8Atvd0V1dXVZDgev/QD4iciHEyZM+FsaarTZ5/NsAlZ8xkeENhVDXRmG8V0k3hYGgIfzdd9AILAUPoaMzPzd3QJR4NnJQp9LZa7rXp7je50Bf6+QJcjiNZbruolWw6VEdKo3iJ8GoH+fdDVNE4OsISDCy1IJxl9fX3+IUmpaahPkob39sWrVqo4kuwNjS0tLr97bG553bqlfPR4aCASuzOGK6mb4HBtJRAu82MippuUXhCGjM6uDweDhABKdRRsjovcLXU9KqYlE9GufyzHHcfIWw3n58uWdABb5XB6p6/rNhS4fZl4MoMPn8gVetK6smTFjxr7M/NMkIvrHbNIfMWLEg0jgJUBEZ/f9ux/Ph8PhdpHR4hfhxQN9wTTNk2KxWAuAsFLqMgwQAUvTtCG/Je04zq+SzFyvUUp9Ppv0Z86cWaGUmlLMZeCJo18ZXG+aZkO29zBN8xwi8jsOr4uZb02rw2ja8z6XTshkZUZE3/L5/JVChzD1It69BB9rXCK6I59nCXvi8kv4GGAx83mmaZ5byDLyQvP6ncEbIKJFM2fOrMh2Edzd3X0v/K3Tn4tGo1Y2N/AmPIkOh6g3DON4Zp6eoP4lQtYQEGHXdV3fVWtDQ0NAKfVbZn4U8SPLygHMVUr9NRQKHej3u/Hjx/8dQzy6VDQaXQ3/sHE6gMVKqYxWVzNmzBjR1dX1BICIUuoSFGlYTy8+7QN+ZcDMjwWDwS9mmr5hGGcxc7Ltslts2/4gnTQty7IAJNomLk93ZVZfX38IEf3QR2CWFnJcMAzjbE3T/g7A773mRma+Pt2Ek0Ri8usn67yj9/wmcncXWogdx7kpyXj0ma6urucy3Tqvrq4uM01zARF9zW83wnXdK3LxHD4GWkREDyQYQz5g5idEQotfhF+JRqMJt9SUUlM6OztXALg0QQXPcl23xTCM4xP91ts+HPIWeSUlJVcm6bz7AnjONM3vpTNwmaY5ube39wXEj+cbAeA2pdTTSqlPF2kZ/DBJGYzWNO0ppdQPPaOUVAeuUYZh3ExE93kTu0SsKysr+0UmE0sA9/qtzAzDSGlAVErtF4vFngSQaJW003XdBwa7Lurr6ysNwzjLNM1VXtn5HVbfBeD0VA9oUUqVKqWuU0q91d7e3q2UWmua5ump5qu0tPQa+NuBlDHznwzD+I1SanQh2nBLS8s2Zr40WdFqmrYi3Z0dpdSUQCDw/ABGhb/yJvRZY1lWM4BWn7GovzKLQVaOIKVU3nxSmXlOJBKZm0AozmXmefB5T9c3CQC3A7i8f4UbhnE8Ef01b7MTTQuGw+GWfFeAUmoWgKe81a8fawDc5DjOUy0tLdv8VlW9vb3fJ6IfIMFJNwC2MvMFkUjk0QHy83ai1Q8zf4+I0nYz03Xdam5u3jDAxOE4Zn4Kyf3W/0FENzPzE7Ztb/XJ+2HMfAoRXQXgwCRpdbiuOyMaja7LsM5GI+6TOdZnRfGIpmnXNDc3/yPRymbEiBGnMPOvARzkc4uf2bZ9bQb5agUwLUHdfVvX9XcSfD4awH7MPNX73dEAAgPcJgag0bbtx9LI170AvpXg0hW2bf8qlTRCodDRruu+mGRSBQAfAfg1ET1iWVYy32UKhUJVruueAuCKBBOhnbZtj8yg/OdhT3/b/jxGRPOYuclHxDSlVMgrr+8k6xPMvKyysvJLTU1NsVyNR6ZpXszMtw80EdV1fdJA/VoovAiz67rjo9HoW31n2rFY7PcAzkgzrWYAZ/aNyuKtjDYlma0PCRH2Gv753rbpQNvGvcwc9k6R2QSgjIgO9o7iqxrg90xE37Es64+ZiHAWfNe27XtSGMC+CeCPKezOOADC3sroAyLSmflgxK1Gj0ohP7uI6CuWZTVl81CGYZxHRAMZw6wBsIaINruuO4KIDkbcgGtMkt+8EQgElPeOLicinEN2ENGplmU9neoPgsHgUZqm+fWjT8rKysaleiyhYRinENHDSC3IUBuA172y36Jp2khmrvDaSfUA40ZGItzQ0FDS2dm5CMDJKXx9G4AwM2/yLO7HIh4JzBhgArmb1Y7jNPhNyjOltrZ2jK7r7/tM5HdPMv9qWdYJIp852g3MY9rhvgJsmmZdLBZ7EJlFu6pD/P3mhbZtPwDEffSUUksBfHOoV4JlWfMNw+gmovnY0w3gP3bmiOjofrPhVG7hApgzkAAXEtu2/2wYRhcR/XmA1Y4OYLr3J9Xn/9duABGdbFnW8mzzG4lE7lVKVQFI5oYyDcA0ZoZfZKV+fKzr+omZCPAg0ExE5w6wwkw0ma1Ncnlkd3f3wZ5gplLmj5imeRIzP4yBT76aBGDS7rJPs51kRFNTU0wpdSricZQHGpfGADguxXaxx616enpOWbNmzbZcP0NLS8s2pdQiAL7v2eXIwhwv+PK2xP63C46mlLrMO6Mzm3CTlQD+YhjGgurq6lHeALxkb6mISCRyP4BjkfsQituJ6FTbtm8bAmXwMOJboq/lfFsmHvhB5UKA+0wcriKiuchNmNH3AHwl0RZ2gXkPwHcnTJhwdLoC7I0DydwTu4jorTQnrE954V3tIp1M9tq2fR6A2fCPBZApDoBfAJiVwwiEiUhmzPhBZWXlUgjFL8Kapj1WX19/iGEYLwKYC6A0F+kS0TmBQMAyTTPY0dHxLPx99IYctm2vAlDjWZ3m4mSaxwHUWJa1ZAiVQaSioiII4EfwD+CfDu8Q0TcjkcgXbNt+O8fZdS3LmkNEjYi/j8y0Tf+1t7fX8Oq/GIgBeNYzCBpv2/Y96fhS95v8PAfA77luzcS4x7Ks1ysqKqYj/v411wFNWj27iqzmfLZt3+k4ThWAhcjB0YtE9IKmaaZt2z/Kt0GUbdsvw+ewHGb+Yy7fQQv5eye8moh+wszz4WO8kgO6AVxFRDOY+bQ8TCIG7Z1wImpra8eUlJRc4MVvTcfhv5uZH9U07Y5MVn2FeieciPr6+krHcc5n5nMApBMr2CGiJtd17yWihYNhxTlz5syKXbt2fZ+I5gBIxRKdmfkFXdd/Fg6Hl+UiDxm8E97hTR62AngXgKVp2kpN05pXrVqVs8ntUUcddXBJSckfAHylT/38ZteuXT9eu3ZtTzZpT5o0qbyysvJMIjrH20lKN4Y3A2hl5meY+bFoNLoi121DKTWFmS/yJmvpnK70TwCPa5o2LxwOhwdz/DFNcw4z/6b/pNNxnIn59g0XEc4NWxAPlj8Y/qlb4HO+5lAW4b6EQqEJzPxZ13VrAUzUNG0cM+9+d9wJ4AMAbxDRqp6enmWtra2f7G0NNRgMHk5ExxBREMBEItq/TxnsZOb3ALypaVqzpmnLvYhcBdldUkrVIv6+70jErY/HIe7WsxXAe0T0ck9Pzwutra2bh9NgU19ff4DjOIfruv5aLkW+j9jtR0RHM3MIwARmPrjPGci9zLxD07QO78i/1wC8pmlaazgcHpTwoI2NjfrGjRsNx3Fmapo2FcBh/Y4v/Qhxg8PXiGjFrl27wtlOUoThK8JDnmISYUEQBGEv1RopAkEQBEEQERYEQRCEYSfCP0Pc9F34Nw+4rvsPKQZBEAQhnxAAhEKhz7muez8SH6k2nNgF4Brbtn8rTUMQBEEYFBEG4vFwieiufLj7DBEiuq6fUYTBEgRBEIS9XYR34x2ucCeAfYZJGTCA27dv335lW1tbtzQJQRAEoWAiDMQP89Y07UGkFyRiKLIFwHm2bT8pTUEQBEEYbBJGl9m0adOWyZMn/6mnp6cSQP1eOfsgesF13eMjkUhEmoEgCIJQNCvhviilTgYwH3k6MrAAxIjoRsuybkAOYroKgiAIQt5EGABCodChzHw/Mx87xJ93o6ZpZ4XD4Vek6gVBEIRCk1JEQYJFAAAB10lEQVSwjnA4/M748eO/AOBqAL1D9FkXOY4TFAEWBEEQhtRKuC+GYUwnogcAjB8iz9jJzJdHIhE5iFoQBEEY2iIMDCmfYttxnDNaWlrekKoWBEEQ9goR3k0R+xQzgNu7urqukKPABEEQhL1ShAHAMIypRPQggKOK5Jm2ENG3LMt6SqpXEARBKGb0bBP44IMPtvbxKa7LhbBnPKMgegHALNu2o1K1giAIwl6/Eu6L51N8D4Cxg/wc4vsrCIIgDG8RBgriU7zRdd0zo9HoCqlOQRAEYViLsIemlLoEwC0ASvOY/0WO41zQ0tKyTapSEARBEBHug1KqHsADACbkOOlOIrrIsqz7pAoFQRAEEWF/IR7NzL8notNzkmEiKxaLnSm+v4IgCIKIcIp4PsXzAIzMMAnx/RUEQRBEhLNYFU8B8BDS9yne7Pn+Pi1VJgiCIOwt6IN5s0x8ipn5eSI6Xnx/BUEQBFkJ5wjTNE9i5vnw9ynuJaKfi++vIAiCICKcB+rr6w+IxWILAMzqd2kDM58ZiURWShUJgiAIIsJ5zINS6lJ4PsXMfF93d/fstWvX7pDqEQRBEIRBwDTNmaZpni4lIQiCIAiCIAiCIAiCIAiCIAiCIAiCkDP+Py3ejlH/NtyZAAAAAElFTkSuQmCC"
+              square_logo: "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"
+              company_name: "cloud.gov operations"
+            links:
+              passwd: "/#"
+              signup: "/#"
+            self_service_links_enabled: false
+            saml:
+              entity_base_url: opslogin.fr.cloud.gov
+              activeKeyId: key-2
+              keys:
+                key-2:
+                  key: ((uaa_login_saml_20190222.private_key))
+                  certificate: ((uaa_login_saml_20190222.certificate))
+                  passphrase: ""
+              providers: ((saml_providers))
+          uaadb:
+            address: ((terraform_outputs.opsuaa_rds_host))
+            port: ((terraform_outputs.opsuaa_rds_port))
+            user: ((terraform_outputs.opsuaa_rds_username))
+            password: ((terraform_outputs.opsuaa_rds_password))
+            db_scheme: postgresql
+            databases:
+              - tag: uaa
+                name: opsuaa
+            roles:
+              - tag: admin
+                name: opsuaa
+                password: ((terraform_outputs.opsuaa_rds_password))
+      - name: uaa-customized
+        release: uaa-customized
+        properties: {}
+      - name: secureproxy
+        release: secureproxy
+        properties:
+          secureproxy:
+            listen_port: 8081
+            proxy_port: 8080
 
 variables:
-- name: uaa_jwt_signing_key
-  type: rsa
-- name: uaa_admin_client_secret
-  type: password
-- name: uaa_login_client_secret
-  type: password
-- name: bosh_ci_client_secret
-  type: password
-- name: doomsday_readonly_secret_staging
-  type: password
-- name: pgp_credhub_client_secret
-  type: password
-- name: pages_user_agent_credhub_client_secret
-  type: password
-- name: opensearch_proxy_ci_client_secret
-  type: password
-- name: opensearch_ci_client_secret
-  type: password
-- name: concourse_client_secret_staging
-  type: password
-- name: concourse_client_secret_production
-  type: password
-- name: platform_kibana_client_secret_development
-  type: password
-- name: platform_kibana_client_secret_staging
-  type: password
-- name: platform_kibana_client_secret_production
-  type: password
-- name: platform_kibana_client_secret_east
-  type: password
-- name: platform_kibana_client_secret_west
-  type: password
-- name: prometheus_client_secret_staging
-  type: password
-- name: prometheus_client_secret_production
-  type: password
-- name: prometheus_client_secret_east
-  type: password
-- name: prometheus_client_secret_west
-  type: password
-- name: doomsday_client_secret_staging
-  type: password
-- name: doomsday_client_secret_production
-  type: password
-- name: nessus_client_secret_production
-  type: password
-- name: doomsday_client_secret_east
-  type: password
-- name: doomsday_client_secret_west
-  type: password
-- name: defectdojo_client_secret_development
-  type: password
-- name: defectdojo_client_secret_staging
-  type: password
-- name: uaa_encryption_key_1
-  type: password
-- name: uaa_ca
-  type: certificate
-  options:
-    is_ca: true
-    common_name: uaaCA
-- name: uaa_ssl
-  type: certificate
-  options:
-    ca: uaa_ca
-    common_name: uaaSSL
-    alternative_names:
-    - uaaSSL
-    - opsuaa.internal
-  update_mode: converge
-- name: uaa_login_saml
-  type: certificate
-  options:
-    ca: uaa_ca
-    common_name: uaa_login_saml
+  - name: uaa_jwt_signing_key
+    type: rsa
+  - name: uaa_admin_client_secret
+    type: password
+  - name: uaa_login_client_secret
+    type: password
+  - name: bosh_ci_client_secret
+    type: password
+  - name: doomsday_readonly_secret_staging
+    type: password
+  - name: pgp_credhub_client_secret
+    type: password
+  - name: pages_user_agent_credhub_client_secret
+    type: password
+  - name: opensearch_proxy_ci_client_secret
+    type: password
+  - name: opensearch_ci_client_secret
+    type: password
+  - name: concourse_client_secret_staging
+    type: password
+  - name: concourse_client_secret_production
+    type: password
+  - name: platform_kibana_client_secret_development
+    type: password
+  - name: platform_kibana_client_secret_staging
+    type: password
+  - name: platform_kibana_client_secret_production
+    type: password
+  - name: platform_kibana_client_secret_east
+    type: password
+  - name: platform_kibana_client_secret_west
+    type: password
+  - name: prometheus_client_secret_staging
+    type: password
+  - name: prometheus_client_secret_production
+    type: password
+  - name: prometheus_client_secret_east
+    type: password
+  - name: prometheus_client_secret_west
+    type: password
+  - name: doomsday_client_secret_staging
+    type: password
+  - name: doomsday_client_secret_production
+    type: password
+  - name: nessus_client_secret_production
+    type: password
+  - name: doomsday_client_secret_east
+    type: password
+  - name: doomsday_client_secret_west
+    type: password
+  - name: defectdojo_client_secret_development
+    type: password
+  - name: defectdojo_client_secret_staging
+    type: password
+  - name: defectdojo_client_secret_production
+    type: password
+  - name: uaa_encryption_key_1
+    type: password
+  - name: uaa_ca
+    type: certificate
+    options:
+      is_ca: true
+      common_name: uaaCA
+  - name: uaa_ssl
+    type: certificate
+    options:
+      ca: uaa_ca
+      common_name: uaaSSL
+      alternative_names:
+        - uaaSSL
+        - opsuaa.internal
+    update_mode: converge
+  - name: uaa_login_saml
+    type: certificate
+    options:
+      ca: uaa_ca
+      common_name: uaa_login_saml
