@@ -322,6 +322,15 @@ instance_groups:
                   groups:
                     - credhub.read
                     - credhub.write
+                - name: zap-scan-user
+                  password: ((zap-scan-password))
+                  groups:
+                    - credhub.read
+                    - credhub.pages
+                    - openid
+                    - concourse.pages
+                    - concourse.viewer
+
             clients:
               admin:
                 override: true
@@ -534,13 +543,6 @@ instance_groups:
                 app-launch-url: https://nessus.fr.cloud.gov
                 app-icon: "iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAAAXNSR0IArs4c6QAABChJREFUeF7tnGF21DAMhNOTUU4GnAw4GaA2Lnlp1tLE0sjJav/Aa13Lnk8aOdnNviz1SlXgJTV6BV8KQHISFIACkKxAcviqgAKQrEBy+KqAJwDwZ1mWX5t9/l7//z157/vwr8uyfNv9UH4WmqShk6+b+fkPgGzk6CVgBEgGjLYmEf3R+mTNoRqFTm4AsIXygwiilxTbNUmCfI2s1JkAtH1GgpBK29tMT9+nBCCCyMYFxLZ3jCRi8/ee1RzNH5kMb/EYFSCblpI/8/IQIDt+d98MALIAOQmdfY1AQC1nv8ZwfcIDgI34EaQzEEbFD/d/lgVJnFExZA45jVh7gke8M9DhKmdVwKgNtY1ZIIx4/lZAijaUIE421E5H2rncesbvZSsl+5kWJLG8MrMnjof1UHVhVoBXL+gJNHLaahVBy34q6U29R1mER/ZTTj70RrMzWy8r2jdkj+xnOwLlSvio2Xlk6xaAx3xU62mi0IlvaIyKtrWLUVtLET+rB2wrYhRCS6AR+0kTfwYAoycjsaGjd7KsV6Sp4s8CoIl1phpEQHkh9/jbBZ3n7W4r8E/jMnuAR3Nu94aQ+/zpWZ99DLVki7UaEABTCT/DKcgK4ovypn4v+73fWbOsGRozmwX1Fi9CWxpu83brrWtIMO/BVwLQ9q4dOS+1p0stdiVQALzLEJyvAICCeQ8vAN6KgvMVAFAw7+EFwFtRcL4CAArmPfzpAWgCeAt+tfmgoz002HgOv5pg3uuFNIUGFwATK0hTaHABKAAmBZIHQUkNDa4KMKGFNIUGF4ACYFIgeRCU1NBgYwWcmTNZMyi8dh0E7R8aXADeFCgAUL76Dy4A/ppCMxYASC7/wQXAX1NoxgIAyeU/uAD4awrNOD0AaDc3HAwd7aHBq1ijD0PcUPOPLcHPmJ0BYP3g7J2FfrQ3+APAZwB4PWR3R0CwnvAfrKpVFXxOHzj7ZYqzAORvC8J/CKfEHwVQEN4BnBbfA0DLAamG3oMUd/P79m2P8u/QcwgjFqSJqh1XLV89o8Xw+r3FTkO0CpnUeL0An5m91D6YRwMwZDO9dUcC0I6rMwHQqvWWADx70GhxuN7fQRYTWQGyDi2zZugDmv2EJko2gBlsSAMQZj+hZNcyvEIf0Kr01gAYSaBZcpr/szavZVhmH9DsJ1yj6B5gacSZfUADEGo/4XQv0Ae06nwKAKxEOOoFqf7P3LiWaRl9QLMfij6MHjBrH9AAhNsPhfDEfUCryqcCwEyG1gvS/Z+9aS3jtAsm9u8p9kwJYnx/gC1wLx7FftgVoN0XKgAEBa5gQ9Qrc6YFCd8rVAHNftgW1ApMO38TCvFhCKr4WQAk7owQMq7Ghz4Z55GpmZ8nap/nSf0OaXYP8IB2qzkKQDLOAlAAkhVIDl8VUACSFUgOXxVQAJIVSA7/F5F8y2EoPqc1AAAAAElFTkSuQmCC"
                 secret: ((nessus_client_secret_production))
-              zap-scan:
-                <<: *client-template
-                override: true
-                authorized-grant-types: client_credentials, refresh_token
-                authorities: credhub.read, concourse.viewer, concourse.pages
-                secret: ((zap-scan-client-secret))
-                scope: uaa.user,credhub.read,credhub.pages,openid,concourse.pages,concourse.viewer
 
             login: { client_secret: ((uaa_login_client_secret)) }
             zones: { internal: { hostnames: ["opsuaa.internal"] } }
@@ -664,5 +666,5 @@ variables:
     options:
       ca: uaa_ca
       common_name: uaa_login_saml
-  - name: zap-scan-client-secret
+  - name: zap-scan-password
     type: password
