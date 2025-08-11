@@ -437,6 +437,14 @@ instance_groups:
                 scope: uaa.none,credhub.read,credhub.write
                 secret: ((opensearch_ci_client_secret))
 
+              #zap scan client - just enough permissions to use the zap-scan-user to login and create a token via "uaac context"
+              zap_scan_client:
+                override: true
+                authorized-grant-types: password,refresh_token
+                authorities: uaa.user
+                scope: uaa.user
+                secret: ((zap_scan_client_secret))
+
               # Defect Dojo auth
               defectdojo_development:
                 <<: *client-template
@@ -634,6 +642,8 @@ variables:
   - name: doomsday_client_secret_production
     type: password
   - name: nessus_client_secret_production
+    type: password
+  - name: zap_scan_client_secret
     type: password
   - name: doomsday_client_secret_east
     type: password
