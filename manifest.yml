@@ -508,7 +508,7 @@ instance_groups:
               # Monitoring auth
               prometheus-staging:
                 <<: *client-template
-                scope: openid,email,profile
+                scope: openid,email,profile,grafana_platform.admin,grafana_platform.support,grafana_pages.admin,grafana_pages.support,grafana_workshop.admin,grafana_workshop.support,grafana_notify.admin,grafana_notify.support
                 redirect-uri: https://prometheus.fr-stage.cloud.gov/oauth2/callback,https://alertmanager.fr-stage.cloud.gov/oauth2/callback,https://grafana.fr-stage.cloud.gov/oauth2/callback,https://grafana.fr-stage.cloud.gov/login/generic_oauth
                 name: "Staging Prometheus"
                 show-on-homepage: true
