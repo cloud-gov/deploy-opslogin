@@ -651,9 +651,9 @@ variables:
     type: password
   - name: prometheus_client_secret_production
     type: password
-  - name: prometheus_client_secret_east
+  - name: prometheus_client_secret_workshop
     type: password
-  - name: prometheus_client_secret_west
+  - name: prometheus_client_secret_pages
     type: password
   - name: doomsday_client_secret_staging
     type: password
@@ -662,10 +662,6 @@ variables:
   - name: nessus_client_secret_production
     type: password
   - name: zap_scan_client_secret
-    type: password
-  - name: doomsday_client_secret_east
-    type: password
-  - name: doomsday_client_secret_west
     type: password
   - name: defectdojo_client_secret_development
     type: password
